@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
-import { Map, List, Gift, Navigation, QrCode, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown } from 'lucide-react';
+import { Map, List, Gift, Navigation, QrCode, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -42,10 +42,20 @@ const RedMarkerIcon = L.icon({
     shadowAnchor: [14, 45]
 });
 
+const GreenMarkerIcon = L.icon({
+    iconUrl: createSvgMarkerIcon('#16a34a'), // Зелено за открити
+    iconSize: [38, 38],
+    iconAnchor: [19, 38],
+    popupAnchor: [0, -38],
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    shadowSize: [41, 41],
+    shadowAnchor: [13, 41]
+});
+
 const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=1000";
 
 // --- ДАННИ ---
-const FOUNTAINS = [
+const FOUNTAINS_DATA = [
   {
     id: 1,
     name: "Чешма Център",
@@ -53,7 +63,6 @@ const FOUNTAINS = [
     description: "Главната, централна чешма на с.Баните, в непосредствена близост до Санаториума; Минерална вода – хипертермална 42⁰С, рН 9,4 с обща минерализация 0,94 g/l, съдържаща хидрокарбонатни, сулфатни, натриеви и флуорни йони и метасилициева киселина в колоидално състояние.",
     features: ["Минерална вода", "Изворна вода", "Пейка"],
     images: ["/images/cheshma_center_banite_1.png", "/images/cheshma_center_banite_2.png", "/images/cheshma_center_banite_3.png"],
-    isFound: false
   },
   {
     id: 2,
@@ -62,7 +71,6 @@ const FOUNTAINS = [
     description: "Най-удобната чешма за пълнене на минерална вода, разположена до централния паркинг в с.Баните. Четирите чучура са елегантно представени от статуята на млада девойка със стомна пълна с вода.",
     features: ["Минерална вода", "Изворна вода", "Пейки", "Паркинг"],
     images: ["/images/cheshma_center_banite_4.png", "/images/cheshma_center_banite_5.png"],
-    isFound: false
   },
   {
     id: 3,
@@ -71,7 +79,6 @@ const FOUNTAINS = [
     description: "Студена, бистра вода за разхлаждане на жарките летни дни.",
     features: ["Изворна вода", "Паркинг"],
     images: ["/images/cheshma_devojka_banite_6.png"],
-    isFound: false
   },
   {
     id: 4,
@@ -80,7 +87,6 @@ const FOUNTAINS = [
     description: "Красива възпоменателна чешма, идеална за отмора.",
     features: ["Изворна вода", "Пейки", "Навес"],
     images: ["/images/cheshma_center_banite_7.jpg"],
-    isFound: false
   },
   {
     id: 5,
@@ -89,7 +95,6 @@ const FOUNTAINS = [
     description: "Прекрасна беседка за събиране на компанията. Намира се точно на “входа” на с.Баните от към с.Оряховец. До беседката се намира външен фитнес с уреди подходящи за всички възрасти.",
     features: ["Изворна вода", "Беседка", "Фитнес", "Гледка"],
     images: ["/images/cheshma_curch_banite_8.png"],
-    isFound: false
   },
   {
     id: 6,
@@ -98,7 +103,6 @@ const FOUNTAINS = [
     description: "Възпоменателна чешма намираща се в подножието на Параклис “Успение Пресвети Богородици”",
     features: ["Изворна вода", "Пейки"],
     images: ["/images/cheshma_curch_banite_10.png"],
-    isFound: false
   },
   {
     id: 7,
@@ -107,7 +111,6 @@ const FOUNTAINS = [
     description: "Беседка в подножието на Параклис “Успение Пресвети Богородици”, подходяща за събиране с приятели и изходен пункт към екопътеки.",
     features: ["Изворна вода", "Беседка", "Гледка"],
     images: [PLACEHOLDER_IMG], 
-    isFound: false
   },
   {
     id: 8,
@@ -116,7 +119,6 @@ const FOUNTAINS = [
     description: "Мечката е емблематична чешма между с.Баните и с.Дрянка. Легендата гласи, че точно тук едно време са се събирали мечкарите от региона и са си почивали на сянка с канче изворна вода.",
     features: ["Изворна вода", "Беседка", "Паркинг"],
     images: ["/images/cheshma_mechkata_9.png"],
-    isFound: false
   },
   {
     id: 9,
@@ -125,7 +127,6 @@ const FOUNTAINS = [
     description: "Възпоменателна чешма с уникален реден камък. Място за отмора и глътка бистра вода.",
     features: ["Изворна вода", "Пейки", "Навес", "Стенопис"],
     images: [PLACEHOLDER_IMG], 
-    isFound: false
   },
   {
     id: 10,
@@ -134,7 +135,6 @@ const FOUNTAINS = [
     description: "Изключително красива и поддържана беседка.",
     features: ["Изворна вода", "Беседка", "Барбекю", "Паркинг", "Стенопис"],
     images: [PLACEHOLDER_IMG],
-    isFound: false
   },
   {
     id: 11,
@@ -143,7 +143,6 @@ const FOUNTAINS = [
     description: "Просторна беседка с всичко необходимо за да си прекарате един приятен следобед със семейство и приятели.",
     features: ["Изворна вода", "Беседка", "Паркинг", "Барбекю"],
     images: [PLACEHOLDER_IMG],
-    isFound: false
   },
   {
     id: 12,
@@ -152,7 +151,6 @@ const FOUNTAINS = [
     description: "Голяма беседка с дебела сянка, пазеща от жаркото слънце.",
     features: ["Изворна вода", "Беседка"],
     images: [PLACEHOLDER_IMG],
-    isFound: false
   }
 ];
 
@@ -189,25 +187,19 @@ const ImageSlider = ({ images }) => {
   );
 };
 
-// --- TUTORIAL OVERLAY (ПОПРАВЕН) ---
+// --- TUTORIAL OVERLAY ---
 const TutorialOverlay = ({ step, onNext, onFinish }) => {
     return (
         <div className="fixed inset-0 z-[2000] bg-black/70 flex flex-col animate-in fade-in duration-300" onClick={onNext}>
-            
-            {/* Стъпка 1: Разгледайте картата (Долу вляво - Коригирано) */}
             {step === 1 && (
                 <div className="absolute bottom-20 left-4 text-white max-w-xs">
-                    {/* Текстът е СТАТИЧЕН, само лека пулсация на рамката */}
                     <div className="bg-blue-600 p-4 rounded-xl shadow-xl border-2 border-white/30 mb-2 animate-pulse-slow origin-bottom-left">
                         <h3 className="font-bold text-lg mb-1">Разгледайте картата</h3>
                         <p className="text-sm opacity-90">Използвайте менюто, за да превключвате между картата и списъка с обекти.</p>
                     </div>
-                    {/* Само стрелката подскача */}
                     <ArrowDown size={40} className="text-white ml-6 animate-bounce" />
                 </div>
             )}
-
-            {/* Стъпка 2: Най-близка чешма (Долу вдясно - Коригирано) */}
             {step === 2 && (
                 <div className="absolute bottom-24 right-4 text-white max-w-xs flex flex-col items-end">
                     <div className="bg-blue-600 p-4 rounded-xl shadow-xl border-2 border-white/30 mb-2 text-right animate-pulse-slow origin-bottom-right">
@@ -217,24 +209,22 @@ const TutorialOverlay = ({ step, onNext, onFinish }) => {
                     <ArrowDown size={40} className="text-white mr-8 animate-bounce" />
                 </div>
             )}
-
-            {/* Стъпка 3: Сканиране (Център) */}
             {step === 3 && (
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                     <div className="bg-white text-slate-800 p-6 rounded-3xl shadow-2xl max-w-sm border-4 border-blue-500 animate-in zoom-in duration-500">
                         <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <QrCode size={32} className="text-blue-600"/>
+                            <Camera size={32} className="text-blue-600"/>
                         </div>
-                        <h3 className="font-bold text-xl mb-2">Сканирайте QR кода</h3>
+                        <h3 className="font-bold text-xl mb-2">Как се отключва чешма?</h3>
                         <p className="text-gray-600 mb-4">
-                            Ще намерите уникален QR код на всяка чешма. Сканирайте го през приложението, за да я маркирате като <strong>Открита</strong>.
+                            Когато стигнете до чешма, намерете стикера и <strong>сканирайте QR кода с камерата на телефона си</strong>.
+                            <br/><br/>
+                            <span className="text-xs text-gray-500">Не търсете бутон за сканиране в приложението. Приложението ще се отвори автоматично след сканирането!</span>
                         </p>
                         <button className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm">Разбрах</button>
                     </div>
                 </div>
             )}
-
-            {/* Стъпка 4: Награда (Център) */}
             {step === 4 && (
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                     <div className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white p-8 rounded-3xl shadow-2xl max-w-sm border-4 border-white animate-in zoom-in duration-500 relative overflow-hidden">
@@ -242,7 +232,7 @@ const TutorialOverlay = ({ step, onNext, onFinish }) => {
                         <Gift size={64} className="mx-auto mb-4 animate-pulse relative z-10"/>
                         <h3 className="font-bold text-2xl mb-2 relative z-10">Голямата Награда</h3>
                         <p className="text-white/90 mb-6 font-medium relative z-10">
-                            Съберете всички <strong>20 чешми</strong> и получете своя уникален подарък от Община Баните!
+                            Съберете всички <strong>12 чешми</strong> и получете своя уникален подарък от Община Баните!
                         </p>
                         <button 
                             onClick={(e) => { e.stopPropagation(); onFinish(); }}
@@ -261,19 +251,14 @@ const TutorialOverlay = ({ step, onNext, onFinish }) => {
 const WelcomeScreen = ({ onStart }) => {
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-br from-cyan-900 via-blue-900 to-slate-900 text-white flex flex-col items-center justify-between p-6 text-center animate-in fade-in duration-1000 overflow-y-auto">
-      
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-sm mx-auto mt-10">
           <div className="bg-white/10 p-5 rounded-full mb-6 backdrop-blur-md border border-white/20 shadow-[0_0_30px_rgba(59,130,246,0.3)] animate-pulse">
              <CheshMapLogo size={64} className="text-cyan-300 drop-shadow-lg" />
           </div>
-
           <h1 className="text-5xl font-extrabold mb-1 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white">CheshMap</h1>
           <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Иновация на Община Баните</p>
-
           <div className="bg-black/30 p-6 rounded-3xl backdrop-blur-md w-full mb-8 border border-white/10 shadow-2xl">
-            <h2 className="text-2xl font-bold mb-4 text-white italic">
-                "Там, където е текло,<br/> пак ще тече"
-            </h2>
+            <h2 className="text-2xl font-bold mb-4 text-white italic">"Там, където е текло,<br/> пак ще тече"</h2>
             <p className="text-sm leading-relaxed mb-4 text-gray-200 font-light">
                 Потопете се в преживяване като никое друго. <strong>CheshMap</strong> е първият дигитален пътеводител по пътя на водата.
             </p>
@@ -282,7 +267,6 @@ const WelcomeScreen = ({ onStart }) => {
                 В нашата традиция съграждането на чешма е свещен акт – <strong>"хаир"</strong>. Вашата мисия е да откриете тези извори на живот.
             </p>
           </div>
-
           <button 
             onClick={onStart}
             className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-cyan-500/30 hover:scale-105 hover:shadow-cyan-500/50 active:scale-95 transition-all flex items-center gap-2 mb-10"
@@ -290,7 +274,6 @@ const WelcomeScreen = ({ onStart }) => {
             Започни приключението <ChevronRight />
           </button>
       </div>
-
       <div className="w-full pb-4">
         <p className="text-[11px] text-cyan-200/60 font-light flex flex-col items-center gap-1">
             <span className="flex items-center gap-1 uppercase tracking-wider font-medium"><BookOpen size={12} /> Вдъхновение</span>
@@ -313,13 +296,31 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 }
 function deg2rad(deg) { return deg * (Math.PI/180) }
 
+// --- HELPERS ЗА ПАМЕТТА (LOCAL STORAGE) ---
+const STORAGE_KEY = 'cheshmap_progress_v1';
+
+const getSavedProgress = () => {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        return [];
+    }
+};
+
+const saveProgress = (ids) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+};
+
 // --- MAIN APP ---
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(true); 
   const [tutorialStep, setTutorialStep] = useState(0);
 
   const [activeTab, setActiveTab] = useState('map');
-  const [fountains, setFountains] = useState(FOUNTAINS);
+  // Тук вече зареждаме състоянието, но 'isFound' ще се изчисли динамично
+  const [fountains, setFountains] = useState(FOUNTAINS_DATA.map(f => ({...f, isFound: false})));
+  
   const [foundCount, setFoundCount] = useState(0);
   const [flyToCoords, setFlyToCoords] = useState(null);
   const [findingNearest, setFindingNearest] = useState(false);
@@ -327,34 +328,58 @@ export default function App() {
   const [userLocation, setUserLocation] = useState(null);
   const [scanResult, setScanResult] = useState(null);
 
+  // --- ИНИЦИАЛИЗАЦИЯ И ПРОВЕРКА ЗА СКЕНИРАНЕ ---
   useEffect(() => {
+    // 1. Взимаме запазените от преди чешми
+    const savedIds = getSavedProgress();
+    
+    // 2. Проверяваме дали има нов скан в URL
     const params = new URLSearchParams(window.location.search);
     const scanId = parseInt(params.get('scan'));
-    if (scanId) {
-      const targetFountain = fountains.find(f => f.id === scanId);
-      if (targetFountain) {
-        if (!targetFountain.isFound) { scanFountain(scanId); }
-        setActiveTab('map');
-        setFlyToCoords(targetFountain.coords);
-      }
-    }
-  }, []);
+    let newFoundId = null;
 
-  const scanFountain = (id) => {
-    const foundFountain = fountains.find(f => f.id === id);
-    const updated = fountains.map(f => {
-      if (f.id === id && !f.isFound) {
-        setFoundCount(prev => prev + 1);
-        return { ...f, isFound: true };
-      }
-      return f;
-    });
-    setFountains(updated);
-    if (foundFountain) {
-        setScanResult(foundFountain);
-        setTimeout(() => setScanResult(null), 5000);
+    if (scanId && FOUNTAINS_DATA.find(f => f.id === scanId)) {
+        if (!savedIds.includes(scanId)) {
+            savedIds.push(scanId); // Добавяме новата
+            saveProgress(savedIds); // Запазваме веднага
+            newFoundId = scanId;
+        } else {
+             // Вече е намерена, но пак ще я покажем
+             newFoundId = scanId;
+        }
     }
-  };
+
+    // 3. Обновяваме състоянието на приложението
+    const updatedFountains = FOUNTAINS_DATA.map(f => ({
+        ...f,
+        isFound: savedIds.includes(f.id)
+    }));
+    
+    setFountains(updatedFountains);
+    setFoundCount(savedIds.length);
+
+    // 4. Ако има току-що сканирана чешма
+    if (newFoundId) {
+        const found = FOUNTAINS_DATA.find(f => f.id === newFoundId);
+        setActiveTab('map');
+        setFlyToCoords(found.coords);
+        setScanResult(found);
+        setTimeout(() => setScanResult(null), 6000);
+        
+        // Ако потребителят е сканирал, значи не му трябва Welcome Screen
+        setShowWelcome(false); 
+        setTutorialStep(0);
+    } else {
+        // Ако няма скан, провери дали е влизал скоро (за да не му досаждаме с Welcome)
+        // За сега оставяме Welcome винаги при чист старт
+    }
+
+    // Изчистваме URL-а, за да не се сканира пак при рефреш
+    if (scanId) {
+        window.history.replaceState({}, document.title, "/");
+    }
+
+  }, []);
 
   const findNearestFountain = () => {
     if (!navigator.geolocation) { alert("Браузърът ви не поддържа локализация."); return; }
@@ -444,7 +469,10 @@ export default function App() {
                 <Marker 
                     key={fountain.id} 
                     position={fountain.coords}
-                    icon={nearestResult?.id === fountain.id ? RedMarkerIcon : BlueMarkerIcon}
+                    icon={
+                        fountain.isFound ? GreenMarkerIcon : // Ако е намерена - ЗЕЛЕНА
+                        (nearestResult?.id === fountain.id ? RedMarkerIcon : BlueMarkerIcon) // Ако е търсена - ЧЕРВЕНА, иначе СИНЯ
+                    }
                 >
                   <Popup className="custom-popup p-0 overflow-hidden" maxWidth={250} minWidth={250}>
                     <div className="flex flex-col p-0 m-0 w-full overflow-hidden rounded-t-lg">
@@ -455,11 +483,18 @@ export default function App() {
                             {fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">{feat}</span>))}
                         </div>
                         <p className="text-xs text-gray-600 mb-3 line-clamp-3">{fountain.description}</p>
-                        {!fountain.isFound ? (
-                          <button onClick={() => scanFountain(fountain.id)} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-full w-full flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-md">
-                            <QrCode size={16} /> Сканирай
-                          </button>
-                        ) : (<div className="bg-green-100 text-green-700 text-sm font-bold py-2 rounded-lg border border-green-200">✅ Успешно открита!</div>)}
+                        
+                        {/* ТУК Е ПРОМЯНАТА: МАХНАХ БУТОНА ЗА ФАЛШИВО СКАНИРАНЕ */}
+                        {fountain.isFound ? (
+                          <div className="bg-green-100 text-green-700 text-sm font-bold py-2 rounded-lg border border-green-200 flex items-center justify-center gap-2">
+                             <CheckCircle size={16}/> Успешно открита!
+                          </div>
+                        ) : (
+                          <div className="bg-gray-50 text-gray-500 text-xs py-2 px-3 rounded-lg border border-gray-200 italic">
+                             📷 Сканирайте стикера на място с телефона си, за да отключите.
+                          </div>
+                        )}
+                        
                       </div>
                     </div>
                   </Popup>
