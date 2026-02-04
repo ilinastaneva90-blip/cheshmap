@@ -20,7 +20,7 @@ export default defineConfig({
         orientation: 'portrait',
         icons: [
           {
-            src: 'pwa-192x192.png', // Ще работи и без тях засега, но е хубаво да ги имаш
+            src: 'pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
@@ -32,18 +32,20 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Това казва: "Пази всички картинки, кодове и стилове в телефона"
+        // ТОВА Е КЛЮЧЪТ КЪМ УСПЕХА:
+        // Казваме: "Ако линкът не се намери офлайн, зареди index.html"
+        navigateFallback: '/index.html',
+        
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
         runtimeCaching: [
           {
-            // Опит за кеширане на картата (OpenStreetMap), доколкото е възможно
             urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*$/,
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'osm-tiles',
               expiration: {
                 maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 дни
+                maxAgeSeconds: 60 * 60 * 24 * 30 
               }
             }
           }
