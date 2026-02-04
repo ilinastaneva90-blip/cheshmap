@@ -392,6 +392,16 @@ export default function App() {
   const [scanResult, setScanResult] = useState(null);
 
   useEffect(() => {
+    // Вземаме локацията веднага при старт, за да можем да сортираме списъка
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setUserLocation([position.coords.latitude, position.coords.longitude]);
+            },
+            (error) => { console.log("GPS not granted yet"); }
+        );
+    }
+
     const savedIds = getSavedProgress();
     const params = new URLSearchParams(window.location.search);
     const scanId = parseInt(params.get('scan'));
@@ -458,6 +468,16 @@ export default function App() {
   const selectFountainFromList = (fountain) => {
       setActiveTab('map'); setFlyToCoords(fountain.coords); setTargetFountainId(fountain.id); setNearestResult(null);
       navigator.geolocation.getCurrentPosition((pos) => { setUserLocation([pos.coords.latitude, pos.coords.longitude]); }, () => {}, {timeout: 5000});
+  };
+
+  // Функция за сортиране по разстояние
+  const sortFountainsByDistance = (list) => {
+    if (!userLocation) return list;
+    return [...list].sort((a, b) => {
+        const distA = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], a.coords[0], a.coords[1]);
+        const distB = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], b.coords[0], b.coords[1]);
+        return distA - distB;
+    });
   };
 
   if (showWelcome) return <WelcomeScreen onStart={startApp} />;
@@ -558,12 +578,19 @@ export default function App() {
                 <div className="mb-6">
                     <h2 className="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 bg-green-50 p-2 rounded-lg border border-green-100"><CheckCircle size={16}/> Вече открити ({foundCount})</h2>
                     <div className="space-y-4">
-                        {fountains.filter(f => f.isFound).map(fountain => (
+                        {sortFountainsByDistance(fountains.filter(f => f.isFound)).map(fountain => (
                             <div key={fountain.id} className="bg-white rounded-xl shadow border border-green-200 overflow-hidden flex opacity-90">
                                 <div className="w-24 h-24 shrink-0"><img src={fountain.images[0]} className="w-full h-full object-cover"/></div>
                                 <div className="p-3 flex flex-col justify-center">
                                     <h3 className="font-bold text-slate-800 text-sm">{fountain.name}</h3>
                                     <p className="text-xs text-green-600 font-medium mt-1">✅ Добавена в колекцията</p>
+                                    
+                                    {userLocation && (
+                                        <p className="text-[10px] text-gray-500 font-bold mt-1 flex items-center gap-1">
+                                            📍 {getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2)} км
+                                        </p>
+                                    )}
+
                                     <button onClick={() => selectFountainFromList(fountain)} className="mt-2 text-xs text-blue-600 font-bold underline text-left">Виж на картата</button>
                                 </div>
                             </div>
@@ -574,11 +601,18 @@ export default function App() {
             <div>
                 <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2 bg-gray-100 p-2 rounded-lg border border-gray-200"><Compass size={16}/> Очакващи откриване ({fountains.length - foundCount})</h2>
                 <div className="space-y-6">
-                    {fountains.filter(f => !f.isFound).map(fountain => (
+                    {sortFountainsByDistance(fountains.filter(f => !f.isFound)).map(fountain => (
                     <div key={fountain.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
                         <div className="aspect-video w-full relative"><ImageSlider images={fountain.images} /></div>
                         <div className="p-5">
-                        <h3 className="font-bold text-slate-800 text-xl leading-tight mb-2">{fountain.name}</h3>
+                        <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-bold text-slate-800 text-xl leading-tight">{fountain.name}</h3>
+                            {userLocation && (
+                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full whitespace-nowrap">
+                                    📍 {getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2)} км
+                                </span>
+                            )}
+                        </div>
                         <div className="flex flex-wrap gap-2 mb-3">{fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">{feat}</span>))}</div>
                         <p className="text-sm text-gray-500 mb-5 leading-relaxed">{fountain.description}</p>
                         <button onClick={() => selectFountainFromList(fountain)} className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-100 transition-colors"><Navigation size={18} /> Навигирай до там</button>
