@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 're
 import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import confetti from 'canvas-confetti'; // Ще работи и без него, но е красиво ако го има
+import confetti from 'canvas-confetti';
 
 // --- ЛОГО ---
 const CheshMapLogo = ({ className, size = 24 }) => (
@@ -78,7 +78,7 @@ const ImageSlider = ({ images }) => {
   );
 };
 
-// --- НОВ КОМПОНЕНТ ЗА АКОРДЕОН В МЕНЮТО ---
+// --- МЕНЮ АКОРДЕОН ---
 const MenuItem = ({ icon: Icon, title, children }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
@@ -92,8 +92,6 @@ const MenuItem = ({ icon: Icon, title, children }) => {
                 </div>
                 {isOpen ? <ChevronUp size={20} className="text-gray-400"/> : <ChevronDown size={20} className="text-gray-400"/>}
             </button>
-            
-            {/* Анимация за отваряне */}
             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
                 <div className="text-gray-600 text-sm leading-relaxed pl-8 pr-2">
                     {children}
@@ -109,19 +107,15 @@ const SideMenu = ({ onClose }) => (
             <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> Меню</h2>
             <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-full"><X size={28}/></button>
         </div>
-        
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
             <MenuItem icon={Info} title="За Община Баните">
                 Община Баните е сърцето на Родопите, известна със своите лековити минерални извори и гостоприемство. Тук водата е живот, а традициите са живи. 
                 <br/><br/>Елате и усетете магията на планината!
             </MenuItem>
-
             <MenuItem icon={BookOpen} title="Мисията">
                 Това приложение е създадено, за да популяризира традицията на "хайр"-а – съграждането на чешми. Целта е да откриете и запазите паметта за тези извори.
-                <br/><br/>
-                <em className="text-blue-600">Вдъхновено от книгата "Водата дарява живот" на сем. Димитрови.</em>
+                <br/><br/><em className="text-blue-600">Вдъхновено от книгата "Водата дарява живот" на сем. Димитрови.</em>
             </MenuItem>
-
             <MenuItem icon={FileText} title="Правила за ползване">
                 <ul className="list-disc pl-4 space-y-1">
                     <li>Пазете природата чиста около чешмите.</li>
@@ -129,7 +123,6 @@ const SideMenu = ({ onClose }) => (
                     <li>Водата в приложението е информативна – винаги проверявайте табелите на място.</li>
                 </ul>
             </MenuItem>
-
             <MenuItem icon={Phone} title="Контакти">
                 <strong>Община Баните</strong><br/>
                 с. Баните, ул. "Стефан Стамболов" 1<br/>
@@ -137,54 +130,45 @@ const SideMenu = ({ onClose }) => (
                 email: oba_banite@abv.bg
             </MenuItem>
         </div>
-        
         <div className="p-4 bg-gray-50 text-center text-xs text-gray-400 border-t border-gray-200 shrink-0">
             CheshMap v1.0 • 2026
         </div>
     </div>
 );
 
-// --- СЕРТИФИКАТ ЗА ПОБЕДА (НОВО) ---
+// --- СЕРТИФИКАТ ---
 const VictoryModal = ({ onClose }) => {
     useEffect(() => {
-        // Опитваме се да пуснем конфети ако библиотеката я има, ако не - нищо
         try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(e) {}
     }, []);
 
     return (
         <div className="fixed inset-0 z-[4000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
             <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative">
-                {/* Златна лента */}
                 <div className="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300 p-6 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-50" style={{backgroundImage: 'radial-gradient(circle, white 2px, transparent 2.5px)', backgroundSize: '20px 20px'}}></div>
                     <Trophy size={64} className="text-white mx-auto drop-shadow-md relative z-10 mb-2" />
                     <h2 className="text-2xl font-black text-white uppercase tracking-widest drop-shadow-sm relative z-10">Сертификат</h2>
                 </div>
-
                 <div className="p-8 text-center space-y-4">
                     <p className="text-gray-500 uppercase text-xs tracking-widest font-bold">Удостоверява се, че</p>
                     <h3 className="text-2xl font-bold text-slate-800 font-serif">ПАЗИТЕЛ НА ВОДАТА</h3>
                     <p className="text-gray-600 text-sm leading-relaxed">
                         Е открил успешно всички <strong>12 чешми</strong> на територията на Община Баните.
                     </p>
-                    
                     <div className="bg-gray-100 p-3 rounded-lg border border-dashed border-gray-300 mt-4">
                         <p className="text-xs text-gray-400 mb-1">Уникален код за награда:</p>
                         <p className="text-xl font-mono font-bold text-blue-600 tracking-wider">BANITE-2026</p>
                     </div>
-
                     <p className="text-[10px] text-gray-400 mt-4">Покажете този екран в Общината, за да получите наградата си.</p>
                 </div>
-                
-                <button onClick={onClose} className="w-full py-4 bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors">
-                    ЗАТВОРИ
-                </button>
+                <button onClick={onClose} className="w-full py-4 bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors">ЗАТВОРИ</button>
             </div>
         </div>
     );
 };
 
-// --- TUTORIAL OVERLAY ---
+// --- TUTORIAL ---
 const TutorialOverlay = ({ step, onNext, onFinish }) => {
     return (
         <div className="fixed inset-0 z-[2000] bg-black/70 flex flex-col animate-in fade-in duration-300" onClick={onNext}>
@@ -222,7 +206,7 @@ const TutorialOverlay = ({ step, onNext, onFinish }) => {
     );
 };
 
-// --- WELCOME SCREEN ---
+// --- WELCOME ---
 const WelcomeScreen = ({ onStart }) => {
   return (
     <div className="fixed inset-0 z-50 bg-gradient-to-br from-cyan-900 via-blue-900 to-slate-900 text-white flex flex-col items-center justify-between p-6 text-center animate-in fade-in duration-1000 overflow-y-auto">
@@ -234,9 +218,7 @@ const WelcomeScreen = ({ onStart }) => {
           <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Иновация на Община Баните</p>
           <div className="bg-black/30 p-6 rounded-3xl backdrop-blur-md w-full mb-8 border border-white/10 shadow-2xl">
             <h2 className="text-2xl font-bold mb-4 text-white italic">"Там, където е текло,<br/> пак ще тече"</h2>
-            <p className="text-sm leading-relaxed mb-4 text-gray-200 font-light">
-                Потопете се в преживяване като никое друго. <strong>CheshMap</strong> е първият дигитален пътеводител по пътя на водата.
-            </p>
+            <p className="text-sm leading-relaxed mb-4 text-gray-200 font-light">Потопете се в преживяване като никое друго. <strong>CheshMap</strong> е първият дигитален пътеводител по пътя на водата.</p>
           </div>
           <button onClick={onStart} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-cyan-500/30 hover:scale-105 hover:shadow-cyan-500/50 active:scale-95 transition-all flex items-center gap-2 mb-10">
             Започни приключението <ChevronRight />
@@ -256,7 +238,6 @@ function deg2rad(deg) { return deg * (Math.PI/180) }
 
 const STORAGE_KEY = 'cheshmap_progress_v1';
 const TUTORIAL_KEY = 'cheshmap_tutorial_seen_v1';
-
 const getSavedProgress = () => { try { const saved = localStorage.getItem(STORAGE_KEY); return saved ? JSON.parse(saved) : []; } catch (e) { return []; } };
 const saveProgress = (ids) => { localStorage.setItem(STORAGE_KEY, JSON.stringify(ids)); };
 
@@ -265,17 +246,14 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(false); 
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
-  const [showVictory, setShowVictory] = useState(false); // За наградата
-
+  const [showVictory, setShowVictory] = useState(false);
   const [activeTab, setActiveTab] = useState('map');
   const [fountains, setFountains] = useState(FOUNTAINS_DATA.map(f => ({...f, isFound: false})));
-  
   const [foundCount, setFoundCount] = useState(0);
   const [flyToCoords, setFlyToCoords] = useState(null);
   const [findingNearest, setFindingNearest] = useState(false);
   const [targetFountainId, setTargetFountainId] = useState(null);
   const [targetDistance, setTargetDistance] = useState(null);
-
   const [nearestResult, setNearestResult] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [scanResult, setScanResult] = useState(null);
@@ -285,39 +263,24 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const scanId = parseInt(params.get('scan'));
     const tutorialSeen = localStorage.getItem(TUTORIAL_KEY);
-
     let newFoundId = null;
 
     if (scanId && FOUNTAINS_DATA.find(f => f.id === scanId)) {
         if (!savedIds.includes(scanId)) { savedIds.push(scanId); saveProgress(savedIds); newFoundId = scanId; } 
         else { newFoundId = scanId; }
     }
-
     const updatedFountains = FOUNTAINS_DATA.map(f => ({ ...f, isFound: savedIds.includes(f.id) }));
     setFountains(updatedFountains);
     setFoundCount(savedIds.length);
 
-    // Логика за Welcome/Tutorial
     if (newFoundId) {
-        // Ако сканира, не показваме Welcome/Tutorial
         const found = FOUNTAINS_DATA.find(f => f.id === newFoundId);
-        setActiveTab('map');
-        setFlyToCoords(found.coords);
-        setScanResult(found);
+        setActiveTab('map'); setFlyToCoords(found.coords); setScanResult(found);
         setTimeout(() => setScanResult(null), 6000);
-        
-        // Ако е 12-тата, показваме победа!
-        if (savedIds.length === FOUNTAINS_DATA.length) {
-             setTimeout(() => setShowVictory(true), 2000);
-        }
-
+        if (savedIds.length === FOUNTAINS_DATA.length) { setTimeout(() => setShowVictory(true), 2000); }
     } else {
-        // Ако влиза нормално и не го е виждал
-        if (!tutorialSeen) {
-            setShowWelcome(true);
-        }
+        if (!tutorialSeen) { setShowWelcome(true); }
     }
-
     if (scanId) { window.history.replaceState({}, document.title, "/"); }
   }, []);
 
@@ -355,16 +318,8 @@ export default function App() {
     );
   };
 
-  const startApp = () => { 
-      setShowWelcome(false); 
-      setTutorialStep(1); 
-  };
-  
-  const finishTutorial = () => {
-      setTutorialStep(0);
-      localStorage.setItem(TUTORIAL_KEY, 'true'); // Записваме, че е видян
-  };
-
+  const startApp = () => { setShowWelcome(false); setTutorialStep(1); };
+  const finishTutorial = () => { setTutorialStep(0); localStorage.setItem(TUTORIAL_KEY, 'true'); };
   const nextTutorialStep = () => { if (tutorialStep < 3) { setTutorialStep(prev => prev + 1); } else { finishTutorial(); } };
 
   const selectFountainFromList = (fountain) => {
@@ -413,7 +368,7 @@ export default function App() {
                             <div className="mb-3 space-y-2">
                                 {targetDistance && <div className="text-xs font-bold text-red-500 animate-pulse">📍 На {targetDistance} км от вас (по въздух)</div>}
                                 <a 
-                                    href={`https://www.google.com/maps/dir/?api=1&destination=${fountain.coords[0]},${fountain.coords[1]}`}
+                                    href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="block w-full bg-blue-500 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-600"
