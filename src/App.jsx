@@ -212,13 +212,16 @@ const MenuItem = ({ icon: Icon, title, children }) => {
 const SideMenu = ({ onClose }) => (
     <div className="fixed inset-0 z-[9999] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
         <div className="bg-blue-600 text-white p-6 flex justify-between items-center shadow-md shrink-0">
-            <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> Меню</h2>
+            <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> CheshMap Меню</h2>
             <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-full"><X size={28}/></button>
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
             <MenuItem icon={Info} title="За Община Баните">
-                Община Баните е сърцето на Родопите, известна със своите лековити минерални извори и гостоприемство. Тук водата е живот, а традициите са живи. 
-                <br/><br/>Елате и усетете магията на планината!
+                Ти се намираш в минералното сърце на Родопа планина. Тук, водата и хората лекуват, затова специално за теб създадохме маршрут от история, култура и традиции. 
+                <br/><br/>
+                В приложението CheshMap ще откриеш някои от най-интересните и значими чешми в региона.
+                <br/><br/>
+                <strong className="text-blue-700">Община Баните ти пожелава незабравимо приключение по Пътя на водата!</strong>
             </MenuItem>
             
             <MenuItem icon={Heart} title="Защо чешми?">
@@ -243,9 +246,9 @@ const SideMenu = ({ onClose }) => (
 
             <MenuItem icon={Phone} title="Контакти">
                 <strong>Община Баните</strong><br/>
-                с. Баните, ул. "Стефан Стамболов" 1<br/>
+                с. Баните, ул. "Стефан Стамболов" 3<br/>
                 тел: 03025/22-20<br/>
-                email: oba_banite@abv.bg
+                email: obbanite@abv.bg
             </MenuItem>
         </div>
         <div className="p-4 bg-gray-50 text-center text-xs text-gray-400 border-t border-gray-200 shrink-0">
@@ -303,7 +306,7 @@ const TutorialOverlay = ({ step, onNext, onFinish }) => {
                 </div>
             )}
             {step === 2 && (
-                <div className="absolute bottom-24 right-4 text-white max-w-xs flex flex-col items-end">
+                <div className="absolute bottom-40 right-4 text-white max-w-xs flex flex-col items-end">
                     <div className="bg-blue-600 p-4 rounded-xl shadow-xl border-2 border-white/30 mb-2 text-right animate-pulse-slow origin-bottom-right">
                         <h3 className="font-bold text-lg mb-1 flex items-center justify-end gap-2"><Compass size={20}/> Вашето начало</h3>
                         <p className="text-sm opacity-90">Натиснете тук, за да намерите най-близката чешма.</p>
@@ -337,10 +340,10 @@ const WelcomeScreen = ({ onStart }) => {
           </div>
           
           <h1 className="text-5xl font-extrabold mb-1 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white">CheshMap</h1>
-          <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Иновация на Община Баните</p>
+          <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Приложение на община Баните</p>
           
           <div className="bg-black/30 p-6 rounded-3xl backdrop-blur-md w-full mb-8 border border-white/10 shadow-2xl">
-            <h2 className="text-2xl font-bold mb-3 text-white">Пътят на водата:<br/> <span className="text-xl font-normal text-cyan-200">Открий душата на Родопа планина</span></h2>
+            <h2 className="text-2xl font-bold mb-3 text-white">Пътят на водата<br/> <span className="text-xl font-normal text-cyan-200">Открий душата на Родопа планина</span></h2>
             <p className="text-sm leading-relaxed mb-0 text-gray-200 font-light">
                 Обиколи едни от най-красивите чешми на община Баните, събери кодовете и стани част от легендата.
             </p>
@@ -350,7 +353,11 @@ const WelcomeScreen = ({ onStart }) => {
             Започни приключението <ChevronRight />
           </button>
       </div>
-      <div className="w-full pb-4"><p className="text-[11px] text-cyan-200/60 font-light flex flex-col items-center gap-1"><span className="flex items-center gap-1 uppercase tracking-wider font-medium"><BookOpen size={12} /> Вдъхновение</span><span className="text-sm text-cyan-100">"Водата дарява живот"</span></p></div>
+      <div className="w-full pb-4">
+        <p className="text-[11px] text-cyan-200/60 font-light flex flex-col items-center gap-1 text-center px-4">
+            Вдъхновено от труда на Маргарита и Алекси Димитрови
+        </p>
+      </div>
     </div>
   );
 };
@@ -540,7 +547,7 @@ export default function App() {
             )}
 
             <button onClick={findNearestFountain} disabled={findingNearest} className="absolute bottom-24 right-4 z-[999] bg-white text-blue-600 p-3 rounded-full shadow-xl border border-blue-100 active:scale-95 transition-all flex items-center gap-2 font-bold text-sm">
-                <Compass className={`w-6 h-6 ${findingNearest ? 'animate-spin' : ''}`} />{findingNearest ? 'Търсене...' : 'Най-близка'}
+                <Compass className={`w-6 h-6 ${findingNearest ? 'animate-spin' : ''}`} />{findingNearest ? 'Най-близка чешма' : 'Най-близка чешма'}
             </button>
           </div>
         )}
@@ -596,7 +603,7 @@ export default function App() {
                      </div>
                 ) : (
                     <>
-                        <p className="text-gray-600 mb-8 max-w-xs mx-auto leading-relaxed">Открийте всички <strong>15 чешми</strong> в района, за да отключите кошницата с подаръци!</p>
+                        <p className="text-gray-600 mb-8 max-w-xs mx-auto leading-relaxed">Открийте всички <strong>15 чешми</strong> в района, за да отключите Вашия подарък!</p>
                         <div className="w-full max-w-xs bg-gray-100 rounded-full h-6 mb-3 overflow-hidden border border-gray-200"><div className="bg-gradient-to-r from-blue-500 to-blue-400 h-full transition-all duration-1000 ease-out" style={{ width: `${(foundCount / fountains.length) * 100}%` }}></div></div>
                         <p className="text-sm font-medium text-gray-500">Прогрес: {foundCount} / {fountains.length}</p>
                     </>
