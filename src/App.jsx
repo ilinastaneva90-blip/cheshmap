@@ -27,6 +27,8 @@ const BlueMarkerIcon = L.icon({ iconUrl: createSvgMarkerIcon('#2563eb'), iconSiz
 const RedMarkerIcon = L.icon({ iconUrl: createSvgMarkerIcon('#dc2626'), iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] });
 const GreenMarkerIcon = L.icon({ iconUrl: createSvgMarkerIcon('#16a34a'), iconSize: [38, 38], iconAnchor: [19, 38], popupAnchor: [0, -38] });
 
+const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=1000";
+
 // --- ДАННИ ---
 const FOUNTAINS_DATA = [
   { id: 1, name: "Чешма Център", coords: [41.61487552647749, 25.006342871370794], description: "Главната, централна чешма на с.Баните, в непосредствена близост до Санаториума; Минерална вода – хипертермална 42⁰С, рН 9,4 с обща минерализация 0,94 g/l.", features: ["Минерална вода", "Изворна вода", "Пейка"], images: ["/images/cheshma_center_banite_1.png", "/images/cheshma_center_banite_2.png", "/images/cheshma_center_banite_3.png"] },
@@ -35,12 +37,12 @@ const FOUNTAINS_DATA = [
   { id: 4, name: "Възпоменателна Чешма", coords: [41.615645142844194, 25.00388594955287], description: "Красива възпоменателна чешма, идеална за отмора.", features: ["Изворна вода", "Пейки", "Навес"], images: ["/images/cheshma_center_banite_7.jpg"] },
   { id: 5, name: "Чешма Здраве", coords: [41.61610666310426, 24.999976654054453], description: "Прекрасна беседка за събиране на компанията. Намира се точно на “входа” на с.Баните от към с.Оряховец. Има външен фитнес.", features: ["Изворна вода", "Беседка", "Фитнес", "Гледка"], images: ["/images/cheshma_curch_banite_8.png"] },
   { id: 6, name: "Чешма Родопа", coords: [41.61365618919042, 25.006942385519846], description: "Възпоменателна чешма намираща се в подножието на Параклис “Успение Пресвети Богородици”.", features: ["Изворна вода", "Пейки"], images: ["/images/cheshma_curch_banite_10.png"] },
-  { id: 7, name: "Чешма Църквата", coords: [41.613349373541986, 25.0068672836741], description: "Беседка в подножието на Параклис “Успение Пресвети Богородици”, подходяща за събиране с приятели и изходен пункт към екопътеки.", features: ["Изворна вода", "Беседка", "Гледка"], images: ["https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=1000"] },
+  { id: 7, name: "Чешма Църквата", coords: [41.613349373541986, 25.0068672836741], description: "Беседка в подножието на Параклис “Успение Пресвети Богородици”, подходяща за събиране с приятели и изходен пункт към екопътеки.", features: ["Изворна вода", "Беседка", "Гледка"], images: [PLACEHOLDER_IMG] },
   { id: 8, name: "Чешма Мечката", coords: [41.61216974548534, 25.014001984963844], description: "Емблематична чешма между с.Баните и с.Дрянка. Легендата гласи, че тук са си почивали мечкарите.", features: ["Изворна вода", "Беседка", "Паркинг"], images: ["/images/cheshma_mechkata_9.png"] },
-  { id: 9, name: "Чешмата на Емил Маджуров", coords: [41.61771515490414, 25.012948903157618], description: "Възпоменателна чешма с уникален реден камък. Място за отмора и глътка бистра вода.", features: ["Изворна вода", "Пейки", "Навес", "Стенопис"], images: ["https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=1000"] },
-  { id: 10, name: "Малчевата чешма", coords: [41.62068278273291, 25.007691773734983], description: "Изключително красива и поддържана беседка.", features: ["Изворна вода", "Беседка", "Барбекю", "Паркинг", "Стенопис"], images: ["https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=1000"] },
-  { id: 11, name: "Заевата чешма", coords: [41.62521095851035, 24.96900607304783], description: "Просторна беседка с всичко необходимо за да си прекарате един приятен следобед със семейство и приятели.", features: ["Изворна вода", "Беседка", "Паркинг", "Барбекю"], images: ["https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=1000"] },
-  { id: 12, name: "Чешма Пожарната", coords: [41.61765178981794, 24.995527755722257], description: "Голяма беседка с дебела сянка, пазеща от жаркото слънце.", features: ["Изворна вода", "Беседка"], images: ["https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=1000"] }
+  { id: 9, name: "Чешмата на Емил Маджуров", coords: [41.61771515490414, 25.012948903157618], description: "Възпоменателна чешма с уникален реден камък. Място за отмора и глътка бистра вода.", features: ["Изворна вода", "Пейки", "Навес", "Стенопис"], images: [PLACEHOLDER_IMG] },
+  { id: 10, name: "Малчевата чешма", coords: [41.62068278273291, 25.007691773734983], description: "Изключително красива и поддържана беседка.", features: ["Изворна вода", "Беседка", "Барбекю", "Паркинг", "Стенопис"], images: [PLACEHOLDER_IMG] },
+  { id: 11, name: "Заевата чешма", coords: [41.62521095851035, 24.96900607304783], description: "Просторна беседка с всичко необходимо за да си прекарате един приятен следобед със семейство и приятели.", features: ["Изворна вода", "Беседка", "Паркинг", "Барбекю"], images: [PLACEHOLDER_IMG] },
+  { id: 12, name: "Чешма Пожарната", coords: [41.61765178981794, 24.995527755722257], description: "Голяма беседка с дебела сянка, пазеща от жаркото слънце.", features: ["Изворна вода", "Беседка"], images: [PLACEHOLDER_IMG] }
 ];
 
 // --- COMPONENTS ---
@@ -111,18 +113,16 @@ const SideMenu = ({ onClose }) => (
                 <br/><br/>Елате и усетете магията на планината!
             </MenuItem>
             
-            {/* НОВА СЕКЦИЯ: Защо чешми? */}
             <MenuItem icon={Heart} title="Защо чешми?">
                 <strong className="text-blue-700">Повече от просто вода</strong>
                 <br/><br/>
-                „В Родопите водата е свещена, а чешмата е памет. Тук хората не градят просто извори – те съграждат „хаир“ (добротворство). 
+                В Родопите водата е свещена, а чешмата е памет. Тук хората не градят просто извори – те съграждат „хаир“ (добротворство). 
                 <br/><br/>
                 Всяка чешма и беседка по пътя ти е построена с мисъл за пътника – да спреш, да отпиеш ледена вода, да починеш под сянката и да благословиш майстора.
                 <br/><br/>
                 В община Баните водата лекува не само тялото, но и душата. Създадохме този маршрут, за да ти покажем скритите архитектурни бижута на нашия край – местата, където местните се събират, празнуват и споделят.
             </MenuItem>
 
-            {/* НОВА СЕКЦИЯ: Как работи играта? */}
             <MenuItem icon={Camera} title="Как работи играта?">
                 <strong className="text-blue-700">Предизвикателството в Стъпки:</strong>
                 <br/><br/>
@@ -228,15 +228,15 @@ const WelcomeScreen = ({ onStart }) => {
              <CheshMapLogo size={64} className="text-cyan-300 drop-shadow-lg" />
           </div>
           
-          {/* НОВ ЗАГЛАВЕН ТЕКСТ */}
-          <h1 className="text-4xl font-extrabold mb-4 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white leading-tight">
-            Пътят на водата:<br/>
-            <span className="text-2xl text-cyan-100 font-normal block mt-2">Открий душата на Родопа планина</span>
-          </h1>
+          <h1 className="text-5xl font-extrabold mb-1 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white">CheshMap</h1>
+          <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Иновация на Община Баните</p>
           
-          <p className="text-cyan-100/90 text-sm font-light leading-relaxed mb-8 px-4">
-            Обиколи едни от най-красивите чешми на община Баните, събери кодовете и стани част от легендата.
-          </p>
+          <div className="bg-black/30 p-6 rounded-3xl backdrop-blur-md w-full mb-8 border border-white/10 shadow-2xl">
+            <h2 className="text-2xl font-bold mb-3 text-white">Пътят на водата:<br/> <span className="text-xl font-normal text-cyan-200">Открий душата на Родопа планина</span></h2>
+            <p className="text-sm leading-relaxed mb-0 text-gray-200 font-light">
+                Обиколи едни от най-красивите чешми на община Баните, събери кодовете и стани част от легендата.
+            </p>
+          </div>
 
           <button onClick={onStart} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-cyan-500/30 hover:scale-105 hover:shadow-cyan-500/50 active:scale-95 transition-all flex items-center gap-2 mb-10">
             Започни приключението <ChevronRight />
@@ -387,7 +387,7 @@ export default function App() {
                         )}
 
                         <a 
-                            href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                            href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full bg-blue-600 !text-white hover:!text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-700 mb-3"
@@ -498,9 +498,9 @@ export default function App() {
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-[9999] max-w-md mx-auto w-full">
-        <button onClick={() => setActiveTab('map')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'map' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Map size={24} strokeWidth={activeTab === 'map' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Карта</span></button>
-        <button onClick={() => setActiveTab('list')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'list' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><List size={24} strokeWidth={activeTab === 'list' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Списък</span></button>
-        <button onClick={() => setActiveTab('reward')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'reward' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Gift size={24} strokeWidth={activeTab === 'reward' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Награда</span></button>
+        <button onClick={() => {setActiveTab('map'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'map' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Map size={24} strokeWidth={activeTab === 'map' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Карта</span></button>
+        <button onClick={() => {setActiveTab('list'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'list' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><List size={24} strokeWidth={activeTab === 'list' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Списък</span></button>
+        <button onClick={() => {setActiveTab('reward'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'reward' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Gift size={24} strokeWidth={activeTab === 'reward' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Награда</span></button>
       </nav>
     </div>
   );
