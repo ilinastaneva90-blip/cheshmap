@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker, Polyline } from 'react-leaflet';
-import { Map, List, Gift, Navigation, QrCode, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
+import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import confetti from 'canvas-confetti'; // Ще работи и без него, но е красиво ако го има
 
 // --- ЛОГО ---
 const CheshMapLogo = ({ className, size = 24 }) => (
@@ -30,18 +31,18 @@ const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1444464666168-49d633b
 
 // --- ДАННИ ---
 const FOUNTAINS_DATA = [
-  { id: 1, name: "Чешма Център", coords: [41.61487552647749, 25.006342871370794], description: "Главната, централна чешма на с.Баните, в непосредствена близост до Санаториума; Минерална вода – хипертермална 42⁰С, рН 9,4.", features: ["Минерална вода", "Изворна вода", "Пейка"], images: ["/images/cheshma_center_banite_1.png", "/images/cheshma_center_banite_2.png", "/images/cheshma_center_banite_3.png"] },
-  { id: 2, name: "Чешма Читалище", coords: [41.614986938272715, 25.005367848566177], description: "Най-удобната чешма за пълнене на минерална вода, разположена до централния паркинг. Статуя на млада девойка.", features: ["Минерална вода", "Изворна вода", "Пейки", "Паркинг"], images: ["/images/cheshma_center_banite_4.png", "/images/cheshma_center_banite_5.png"] },
+  { id: 1, name: "Чешма Център", coords: [41.61487552647749, 25.006342871370794], description: "Главната, централна чешма на с.Баните, в непосредствена близост до Санаториума; Минерална вода – хипертермална 42⁰С, рН 9,4 с обща минерализация 0,94 g/l.", features: ["Минерална вода", "Изворна вода", "Пейка"], images: ["/images/cheshma_center_banite_1.png", "/images/cheshma_center_banite_2.png", "/images/cheshma_center_banite_3.png"] },
+  { id: 2, name: "Чешма Читалище", coords: [41.614986938272715, 25.005367848566177], description: "Най-удобната чешма за пълнене на минерална вода, разположена до централния паркинг. Четирите чучура са елегантно представени от статуята на млада девойка.", features: ["Минерална вода", "Изворна вода", "Пейки", "Паркинг"], images: ["/images/cheshma_center_banite_4.png", "/images/cheshma_center_banite_5.png"] },
   { id: 3, name: "Чешма Родопчанка", coords: [41.615373694868055, 25.004824986560823], description: "Студена, бистра вода за разхлаждане на жарките летни дни.", features: ["Изворна вода", "Паркинг"], images: ["/images/cheshma_devojka_banite_6.png"] },
   { id: 4, name: "Възпоменателна Чешма", coords: [41.615645142844194, 25.00388594955287], description: "Красива възпоменателна чешма, идеална за отмора.", features: ["Изворна вода", "Пейки", "Навес"], images: ["/images/cheshma_center_banite_7.jpg"] },
-  { id: 5, name: "Чешма Здраве", coords: [41.61610666310426, 24.999976654054453], description: "Прекрасна беседка за събиране на компанията. Външен фитнес.", features: ["Изворна вода", "Беседка", "Фитнес", "Гледка"], images: ["/images/cheshma_curch_banite_8.png"] },
-  { id: 6, name: "Чешма Родопа", coords: [41.61365618919042, 25.006942385519846], description: "Възпоменателна чешма в подножието на Параклис “Успение Пресвети Богородици”.", features: ["Изворна вода", "Пейки"], images: ["/images/cheshma_curch_banite_10.png"] },
-  { id: 7, name: "Чешма Църквата", coords: [41.613349373541986, 25.0068672836741], description: "Беседка в подножието на Параклиса, подходяща за събиране с приятели.", features: ["Изворна вода", "Беседка", "Гледка"], images: [PLACEHOLDER_IMG] },
-  { id: 8, name: "Чешма Мечката", coords: [41.61216974548534, 25.014001984963844], description: "Легендарна чешма, където са си почивали мечкарите.", features: ["Изворна вода", "Беседка", "Паркинг"], images: ["/images/cheshma_mechkata_9.png"] },
-  { id: 9, name: "Чешмата на Емил Маджуров", coords: [41.61771515490414, 25.012948903157618], description: "Възпоменателна чешма с уникален реден камък.", features: ["Изворна вода", "Пейки", "Навес", "Стенопис"], images: [PLACEHOLDER_IMG] },
-  { id: 10, name: "Малчевата чешма", coords: [41.62068278273291, 25.007691773734983], description: "Изключително красива и поддържана беседка.", features: ["Изворна вода", "Беседка", "Барбекю", "Паркинг"], images: [PLACEHOLDER_IMG] },
-  { id: 11, name: "Заевата чешма", coords: [41.62521095851035, 24.96900607304783], description: "Просторна беседка с всичко необходимо.", features: ["Изворна вода", "Беседка", "Паркинг", "Барбекю"], images: [PLACEHOLDER_IMG] },
-  { id: 12, name: "Чешма Пожарната", coords: [41.61765178981794, 24.995527755722257], description: "Голяма беседка с дебела сянка.", features: ["Изворна вода", "Беседка"], images: [PLACEHOLDER_IMG] }
+  { id: 5, name: "Чешма Здраве", coords: [41.61610666310426, 24.999976654054453], description: "Прекрасна беседка за събиране на компанията. Намира се точно на “входа” на с.Баните от към с.Оряховец. Има външен фитнес.", features: ["Изворна вода", "Беседка", "Фитнес", "Гледка"], images: ["/images/cheshma_curch_banite_8.png"] },
+  { id: 6, name: "Чешма Родопа", coords: [41.61365618919042, 25.006942385519846], description: "Възпоменателна чешма намираща се в подножието на Параклис “Успение Пресвети Богородици”.", features: ["Изворна вода", "Пейки"], images: ["/images/cheshma_curch_banite_10.png"] },
+  { id: 7, name: "Чешма Църквата", coords: [41.613349373541986, 25.0068672836741], description: "Беседка в подножието на Параклис “Успение Пресвети Богородици”, подходяща за събиране с приятели и изходен пункт към екопътеки.", features: ["Изворна вода", "Беседка", "Гледка"], images: [PLACEHOLDER_IMG] },
+  { id: 8, name: "Чешма Мечката", coords: [41.61216974548534, 25.014001984963844], description: "Емблематична чешма между с.Баните и с.Дрянка. Легендата гласи, че тук са си почивали мечкарите.", features: ["Изворна вода", "Беседка", "Паркинг"], images: ["/images/cheshma_mechkata_9.png"] },
+  { id: 9, name: "Чешмата на Емил Маджуров", coords: [41.61771515490414, 25.012948903157618], description: "Възпоменателна чешма с уникален реден камък. Място за отмора и глътка бистра вода.", features: ["Изворна вода", "Пейки", "Навес", "Стенопис"], images: [PLACEHOLDER_IMG] },
+  { id: 10, name: "Малчевата чешма", coords: [41.62068278273291, 25.007691773734983], description: "Изключително красива и поддържана беседка.", features: ["Изворна вода", "Беседка", "Барбекю", "Паркинг", "Стенопис"], images: [PLACEHOLDER_IMG] },
+  { id: 11, name: "Заевата чешма", coords: [41.62521095851035, 24.96900607304783], description: "Просторна беседка с всичко необходимо за да си прекарате един приятен следобед със семейство и приятели.", features: ["Изворна вода", "Беседка", "Паркинг", "Барбекю"], images: [PLACEHOLDER_IMG] },
+  { id: 12, name: "Чешма Пожарната", coords: [41.61765178981794, 24.995527755722257], description: "Голяма беседка с дебела сянка, пазеща от жаркото слънце.", features: ["Изворна вода", "Беседка"], images: [PLACEHOLDER_IMG] }
 ];
 
 // --- COMPONENTS ---
@@ -77,38 +78,111 @@ const ImageSlider = ({ images }) => {
   );
 };
 
-// --- МЕНЮ СТРАНИЧНО ---
+// --- НОВ КОМПОНЕНТ ЗА АКОРДЕОН В МЕНЮТО ---
+const MenuItem = ({ icon: Icon, title, children }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="border-b border-gray-100 last:border-0 pb-4">
+            <button 
+                onClick={() => setIsOpen(!isOpen)} 
+                className="w-full flex justify-between items-center py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+            >
+                <div className="flex items-center gap-3 text-blue-900 font-bold text-lg">
+                    <Icon size={20} className="text-blue-600"/> {title}
+                </div>
+                {isOpen ? <ChevronUp size={20} className="text-gray-400"/> : <ChevronDown size={20} className="text-gray-400"/>}
+            </button>
+            
+            {/* Анимация за отваряне */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                <div className="text-gray-600 text-sm leading-relaxed pl-8 pr-2">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const SideMenu = ({ onClose }) => (
     <div className="fixed inset-0 z-[3000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
-        <div className="bg-blue-600 text-white p-6 flex justify-between items-center shadow-md">
+        <div className="bg-blue-600 text-white p-6 flex justify-between items-center shadow-md shrink-0">
             <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> Меню</h2>
             <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-full"><X size={28}/></button>
         </div>
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
-            <div className="space-y-2">
-                <h3 className="font-bold text-xl text-blue-900 flex items-center gap-2"><Info size={20}/> За Община Баните</h3>
-                <p className="text-gray-600 leading-relaxed text-sm">Община Баните е сърцето на Родопите, известна със своите лековити минерални извори и гостоприемство.</p>
-            </div>
-            <div className="space-y-2">
-                <h3 className="font-bold text-xl text-blue-900 flex items-center gap-2"><BookOpen size={20}/> Мисията</h3>
-                <p className="text-gray-600 leading-relaxed text-sm">Това приложение е създадено, за да популяризира традицията на "хайр"-а – съграждането на чешми.</p>
-                <p className="text-xs text-gray-500 italic mt-2">Вдъхновено от книгата "Водата дарява живот" на сем. Димитрови.</p>
-            </div>
-            <div className="space-y-2">
-                <h3 className="font-bold text-xl text-blue-900 flex items-center gap-2"><FileText size={20}/> Правила</h3>
-                <ul className="list-disc pl-5 text-gray-600 text-sm space-y-1">
-                    <li>Пазете природата чиста.</li>
+        
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <MenuItem icon={Info} title="За Община Баните">
+                Община Баните е сърцето на Родопите, известна със своите лековити минерални извори и гостоприемство. Тук водата е живот, а традициите са живи. 
+                <br/><br/>Елате и усетете магията на планината!
+            </MenuItem>
+
+            <MenuItem icon={BookOpen} title="Мисията">
+                Това приложение е създадено, за да популяризира традицията на "хайр"-а – съграждането на чешми. Целта е да откриете и запазите паметта за тези извори.
+                <br/><br/>
+                <em className="text-blue-600">Вдъхновено от книгата "Водата дарява живот" на сем. Димитрови.</em>
+            </MenuItem>
+
+            <MenuItem icon={FileText} title="Правила за ползване">
+                <ul className="list-disc pl-4 space-y-1">
+                    <li>Пазете природата чиста около чешмите.</li>
                     <li>Сканирайте QR кодовете само на място.</li>
+                    <li>Водата в приложението е информативна – винаги проверявайте табелите на място.</li>
                 </ul>
-            </div>
-            <div className="space-y-2">
-                <h3 className="font-bold text-xl text-blue-900 flex items-center gap-2"><Phone size={20}/> Контакти</h3>
-                <p className="text-gray-600 text-sm">Община Баните<br/>с. Баните, ул. "Стефан Стамболов" 1</p>
-            </div>
+            </MenuItem>
+
+            <MenuItem icon={Phone} title="Контакти">
+                <strong>Община Баните</strong><br/>
+                с. Баните, ул. "Стефан Стамболов" 1<br/>
+                тел: 03025/22-20<br/>
+                email: oba_banite@abv.bg
+            </MenuItem>
         </div>
-        <div className="p-4 bg-gray-50 text-center text-xs text-gray-400 border-t border-gray-200">CheshMap v1.0 • 2026</div>
+        
+        <div className="p-4 bg-gray-50 text-center text-xs text-gray-400 border-t border-gray-200 shrink-0">
+            CheshMap v1.0 • 2026
+        </div>
     </div>
 );
+
+// --- СЕРТИФИКАТ ЗА ПОБЕДА (НОВО) ---
+const VictoryModal = ({ onClose }) => {
+    useEffect(() => {
+        // Опитваме се да пуснем конфети ако библиотеката я има, ако не - нищо
+        try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(e) {}
+    }, []);
+
+    return (
+        <div className="fixed inset-0 z-[4000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
+            <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative">
+                {/* Златна лента */}
+                <div className="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300 p-6 text-center relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-50" style={{backgroundImage: 'radial-gradient(circle, white 2px, transparent 2.5px)', backgroundSize: '20px 20px'}}></div>
+                    <Trophy size={64} className="text-white mx-auto drop-shadow-md relative z-10 mb-2" />
+                    <h2 className="text-2xl font-black text-white uppercase tracking-widest drop-shadow-sm relative z-10">Сертификат</h2>
+                </div>
+
+                <div className="p-8 text-center space-y-4">
+                    <p className="text-gray-500 uppercase text-xs tracking-widest font-bold">Удостоверява се, че</p>
+                    <h3 className="text-2xl font-bold text-slate-800 font-serif">ПАЗИТЕЛ НА ВОДАТА</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                        Е открил успешно всички <strong>12 чешми</strong> на територията на Община Баните.
+                    </p>
+                    
+                    <div className="bg-gray-100 p-3 rounded-lg border border-dashed border-gray-300 mt-4">
+                        <p className="text-xs text-gray-400 mb-1">Уникален код за награда:</p>
+                        <p className="text-xl font-mono font-bold text-blue-600 tracking-wider">BANITE-2026</p>
+                    </div>
+
+                    <p className="text-[10px] text-gray-400 mt-4">Покажете този екран в Общината, за да получите наградата си.</p>
+                </div>
+                
+                <button onClick={onClose} className="w-full py-4 bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors">
+                    ЗАТВОРИ
+                </button>
+            </div>
+        </div>
+    );
+};
 
 // --- TUTORIAL OVERLAY ---
 const TutorialOverlay = ({ step, onNext, onFinish }) => {
@@ -118,7 +192,7 @@ const TutorialOverlay = ({ step, onNext, onFinish }) => {
                 <div className="absolute bottom-20 left-4 text-white max-w-xs">
                     <div className="bg-blue-600 p-4 rounded-xl shadow-xl border-2 border-white/30 mb-2 animate-pulse-slow origin-bottom-left">
                         <h3 className="font-bold text-lg mb-1">Разгледайте картата</h3>
-                        <p className="text-sm opacity-90">Използвайте менюто, за да превключвате между картата и списъка с обекти.</p>
+                        <p className="text-sm opacity-90">Менюто долу ви позволява да виждате списък с всички обекти.</p>
                     </div>
                     <ArrowDown size={40} className="text-white ml-6 animate-bounce" />
                 </div>
@@ -140,7 +214,7 @@ const TutorialOverlay = ({ step, onNext, onFinish }) => {
                         </div>
                         <h3 className="font-bold text-xl mb-2">Как се отключва чешма?</h3>
                         <p className="text-gray-600 mb-4">Намерете стикера на чешмата и <strong>сканирайте QR кода с камерата на телефона</strong>.</p>
-                        <button className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm">Разбрах</button>
+                        <button onClick={(e) => { e.stopPropagation(); onFinish(); }} className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm">Разбрах</button>
                     </div>
                 </div>
             )}
@@ -160,7 +234,9 @@ const WelcomeScreen = ({ onStart }) => {
           <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Иновация на Община Баните</p>
           <div className="bg-black/30 p-6 rounded-3xl backdrop-blur-md w-full mb-8 border border-white/10 shadow-2xl">
             <h2 className="text-2xl font-bold mb-4 text-white italic">"Там, където е текло,<br/> пак ще тече"</h2>
-            <p className="text-sm leading-relaxed mb-4 text-gray-200 font-light">Потопете се в преживяване като никое друго.</p>
+            <p className="text-sm leading-relaxed mb-4 text-gray-200 font-light">
+                Потопете се в преживяване като никое друго. <strong>CheshMap</strong> е първият дигитален пътеводител по пътя на водата.
+            </p>
           </div>
           <button onClick={onStart} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-cyan-500/30 hover:scale-105 hover:shadow-cyan-500/50 active:scale-95 transition-all flex items-center gap-2 mb-10">
             Започни приключението <ChevronRight />
@@ -179,14 +255,17 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 function deg2rad(deg) { return deg * (Math.PI/180) }
 
 const STORAGE_KEY = 'cheshmap_progress_v1';
+const TUTORIAL_KEY = 'cheshmap_tutorial_seen_v1';
+
 const getSavedProgress = () => { try { const saved = localStorage.getItem(STORAGE_KEY); return saved ? JSON.parse(saved) : []; } catch (e) { return []; } };
 const saveProgress = (ids) => { localStorage.setItem(STORAGE_KEY, JSON.stringify(ids)); };
 
 // --- MAIN APP ---
 export default function App() {
-  const [showWelcome, setShowWelcome] = useState(true); 
+  const [showWelcome, setShowWelcome] = useState(false); 
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+  const [showVictory, setShowVictory] = useState(false); // За наградата
 
   const [activeTab, setActiveTab] = useState('map');
   const [fountains, setFountains] = useState(FOUNTAINS_DATA.map(f => ({...f, isFound: false})));
@@ -205,6 +284,8 @@ export default function App() {
     const savedIds = getSavedProgress();
     const params = new URLSearchParams(window.location.search);
     const scanId = parseInt(params.get('scan'));
+    const tutorialSeen = localStorage.getItem(TUTORIAL_KEY);
+
     let newFoundId = null;
 
     if (scanId && FOUNTAINS_DATA.find(f => f.id === scanId)) {
@@ -216,14 +297,27 @@ export default function App() {
     setFountains(updatedFountains);
     setFoundCount(savedIds.length);
 
+    // Логика за Welcome/Tutorial
     if (newFoundId) {
+        // Ако сканира, не показваме Welcome/Tutorial
         const found = FOUNTAINS_DATA.find(f => f.id === newFoundId);
         setActiveTab('map');
         setFlyToCoords(found.coords);
         setScanResult(found);
         setTimeout(() => setScanResult(null), 6000);
-        setShowWelcome(false); setTutorialStep(0);
+        
+        // Ако е 12-тата, показваме победа!
+        if (savedIds.length === FOUNTAINS_DATA.length) {
+             setTimeout(() => setShowVictory(true), 2000);
+        }
+
+    } else {
+        // Ако влиза нормално и не го е виждал
+        if (!tutorialSeen) {
+            setShowWelcome(true);
+        }
     }
+
     if (scanId) { window.history.replaceState({}, document.title, "/"); }
   }, []);
 
@@ -261,8 +355,17 @@ export default function App() {
     );
   };
 
-  const startApp = () => { setShowWelcome(false); setTutorialStep(1); };
-  const nextTutorialStep = () => { if (tutorialStep < 3) { setTutorialStep(prev => prev + 1); } else { setTutorialStep(0); } };
+  const startApp = () => { 
+      setShowWelcome(false); 
+      setTutorialStep(1); 
+  };
+  
+  const finishTutorial = () => {
+      setTutorialStep(0);
+      localStorage.setItem(TUTORIAL_KEY, 'true'); // Записваме, че е видян
+  };
+
+  const nextTutorialStep = () => { if (tutorialStep < 3) { setTutorialStep(prev => prev + 1); } else { finishTutorial(); } };
 
   const selectFountainFromList = (fountain) => {
       setActiveTab('map'); setFlyToCoords(fountain.coords); setTargetFountainId(fountain.id); setNearestResult(null);
@@ -273,8 +376,9 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 text-slate-800 font-sans">
-      {tutorialStep > 0 && <TutorialOverlay step={tutorialStep} onNext={nextTutorialStep} onFinish={() => setTutorialStep(0)} />}
+      {tutorialStep > 0 && <TutorialOverlay step={tutorialStep} onNext={nextTutorialStep} onFinish={finishTutorial} />}
       {showMenu && <SideMenu onClose={() => setShowMenu(false)} />}
+      {showVictory && <VictoryModal onClose={() => setShowVictory(false)} />}
 
       <header className="bg-blue-600 text-white p-4 shadow-lg z-10 flex justify-between items-center relative">
         <div className="flex items-center gap-2 cursor-pointer active:opacity-80 transition-opacity" onClick={() => setShowMenu(true)}>
@@ -288,18 +392,10 @@ export default function App() {
         {activeTab === 'map' && (
           <div className="h-full w-full relative">
             <MapContainer center={[41.6167, 25.0167]} zoom={14} style={{ height: "100%", width: "100%" }} zoomControl={false}>
-              <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <TileLayer attribution='© OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <MapController targetCoords={flyToCoords} />
               {userLocation && <CircleMarker center={userLocation} pathOptions={{ color: 'white', fillColor: '#2563eb', fillOpacity: 1 }} radius={8}><Popup>📍 Вие сте тук</Popup></CircleMarker>}
               
-              {/* ПУНКТИРАНАТА ЛИНИЯ (НОВО) */}
-              {userLocation && targetFountainId && (
-                  <Polyline 
-                    positions={[userLocation, fountains.find(f => f.id === targetFountainId).coords]}
-                    pathOptions={{ color: '#3b82f6', dashArray: '10, 15', weight: 4, opacity: 0.7 }}
-                  />
-              )}
-
               {fountains.map(fountain => (
                 <Marker 
                     key={fountain.id} 
@@ -315,15 +411,14 @@ export default function App() {
                         
                         {targetFountainId === fountain.id && (
                             <div className="mb-3 space-y-2">
-                                {targetDistance && <div className="text-xs font-bold text-red-500 animate-pulse">📍 На {targetDistance} км от вас</div>}
-                                {/* БУТОН ЗА GOOGLE MAPS (НОВО) */}
+                                {targetDistance && <div className="text-xs font-bold text-red-500 animate-pulse">📍 На {targetDistance} км от вас (по въздух)</div>}
                                 <a 
                                     href={`https://www.google.com/maps/dir/?api=1&destination=${fountain.coords[0]},${fountain.coords[1]}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="block w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95"
+                                    className="block w-full bg-blue-500 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-600"
                                 >
-                                    <MapPin size={14}/> Навигирай с Google Maps
+                                    <MapPin size={14} className="text-white"/> Навигирай с Google Maps
                                 </a>
                             </div>
                         )}
@@ -412,9 +507,20 @@ export default function App() {
             <div className="p-6 h-full flex flex-col items-center justify-center text-center bg-white">
                 <div className="bg-yellow-50 p-8 rounded-full mb-6 border-4 border-yellow-100"><Gift className="w-16 h-16 text-yellow-500" /></div>
                 <h2 className="text-2xl font-extrabold text-slate-800 mb-3">Вашата Награда</h2>
-                <p className="text-gray-600 mb-8 max-w-xs mx-auto leading-relaxed">Открийте всички <strong>12 чешми</strong> в района, за да отключите кошницата с подаръци!</p>
-                <div className="w-full max-w-xs bg-gray-100 rounded-full h-6 mb-3 overflow-hidden border border-gray-200"><div className="bg-gradient-to-r from-blue-500 to-blue-400 h-full transition-all duration-1000 ease-out" style={{ width: `${(foundCount / fountains.length) * 100}%` }}></div></div>
-                <p className="text-sm font-medium text-gray-500">Прогрес: {foundCount} / {fountains.length}</p>
+                {foundCount === fountains.length ? (
+                     <div className="space-y-4">
+                        <p className="text-green-600 font-bold text-lg animate-pulse">ВИЕ УСПЯХТЕ!</p>
+                        <button onClick={() => setShowVictory(true)} className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold py-4 px-8 rounded-full shadow-xl text-xl hover:scale-105 transition-transform flex items-center gap-2 mx-auto">
+                            <Trophy size={24}/> ВЗЕМИ СЕРТИФИКАТ
+                        </button>
+                     </div>
+                ) : (
+                    <>
+                        <p className="text-gray-600 mb-8 max-w-xs mx-auto leading-relaxed">Открийте всички <strong>12 чешми</strong> в района, за да отключите кошницата с подаръци!</p>
+                        <div className="w-full max-w-xs bg-gray-100 rounded-full h-6 mb-3 overflow-hidden border border-gray-200"><div className="bg-gradient-to-r from-blue-500 to-blue-400 h-full transition-all duration-1000 ease-out" style={{ width: `${(foundCount / fountains.length) * 100}%` }}></div></div>
+                        <p className="text-sm font-medium text-gray-500">Прогрес: {foundCount} / {fountains.length}</p>
+                    </>
+                )}
             </div>
         )}
       </main>
