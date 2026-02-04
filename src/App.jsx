@@ -392,16 +392,7 @@ export default function App() {
   const [scanResult, setScanResult] = useState(null);
 
   useEffect(() => {
-    // Вземаме локацията веднага при старт, за да можем да сортираме списъка
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                setUserLocation([position.coords.latitude, position.coords.longitude]);
-            },
-            (error) => { console.log("GPS not granted yet"); }
-        );
-    }
-
+    // Вземаме само прогреса, без GPS
     const savedIds = getSavedProgress();
     const params = new URLSearchParams(window.location.search);
     const scanId = parseInt(params.get('scan'));
@@ -437,6 +428,15 @@ export default function App() {
     }
   }, [userLocation, targetFountainId]);
 
+  // Функция за пускане на локация
+  const enableLocationForList = () => {
+    if (!navigator.geolocation) { alert("Браузърът не поддържа GPS."); return; }
+    navigator.geolocation.getCurrentPosition(
+        (position) => { setUserLocation([position.coords.latitude, position.coords.longitude]); },
+        (error) => { console.error(error); alert("Моля, разрешете GPS."); }
+    );
+  };
+
   const findNearestFountain = () => {
     if (!navigator.geolocation) { alert("Браузърът ви не поддържа локализация."); return; }
     setFindingNearest(true); setNearestResult(null); setTargetFountainId(null);
@@ -470,7 +470,6 @@ export default function App() {
       navigator.geolocation.getCurrentPosition((pos) => { setUserLocation([pos.coords.latitude, pos.coords.longitude]); }, () => {}, {timeout: 5000});
   };
 
-  // Функция за сортиране по разстояние
   const sortFountainsByDistance = (list) => {
     if (!userLocation) return list;
     return [...list].sort((a, b) => {
@@ -517,10 +516,12 @@ export default function App() {
                       <div className="p-3 text-center">
                         <h3 className="font-bold text-blue-900 text-lg mb-1">{fountain.name}</h3>
                         
-                        {/* Махнат е текстът за дистанция "по въздух", но бутонът за навигация стои */}
-                        
+                        {targetFountainId === fountain.id && targetDistance && (
+                            <div className="text-xs font-bold text-red-500 animate-pulse mb-2">📍 На {targetDistance} км от вас (по въздух)</div>
+                        )}
+
                         <a 
-                            href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                            href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full bg-blue-600 !text-white hover:!text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-700 mb-3"
@@ -557,7 +558,7 @@ export default function App() {
                         <div>
                             <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">ЦЕЛТА Е:</p>
                             <h3 className="text-lg font-bold text-red-600">{nearestResult ? nearestResult.name : fountains.find(f => f.id === targetFountainId)?.name}</h3>
-                            {/* Скрито разстояние тук също */}
+                            <p className="text-sm text-gray-600 mt-1">Разстояние: <strong>{nearestResult ? nearestResult.dist : targetDistance} км</strong></p>
                         </div>
                         <button onClick={() => {setNearestResult(null); setTargetFountainId(null);}} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} className="text-gray-400" /></button>
                     </div>
@@ -572,6 +573,13 @@ export default function App() {
 
         {activeTab === 'list' && (
           <div className="p-4 overflow-y-auto h-full pb-24 max-w-md mx-auto w-full">
+            {/* БУТОН ЗА ВКЛЮЧВАНЕ НА ЛОКАЦИЯ В СПИСЪКА */}
+            {!userLocation && (
+                <button onClick={enableLocationForList} className="w-full bg-blue-100 text-blue-700 text-xs font-bold py-3 px-4 rounded-xl mb-4 flex items-center justify-center gap-2 border border-blue-200 animate-pulse">
+                    <MapPin size={16} /> Включи локация за разстояние
+                </button>
+            )}
+
             {foundCount > 0 && (
                 <div className="mb-6">
                     <h2 className="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 bg-green-50 p-2 rounded-lg border border-green-100"><CheckCircle size={16}/> Вече открити ({foundCount})</h2>
@@ -582,9 +590,6 @@ export default function App() {
                                 <div className="p-3 flex flex-col justify-center">
                                     <h3 className="font-bold text-slate-800 text-sm">{fountain.name}</h3>
                                     <p className="text-xs text-green-600 font-medium mt-1">✅ Добавена в колекцията</p>
-                                    
-                                    {/* Скрито текстово показване на км */}
-
                                     <button onClick={() => selectFountainFromList(fountain)} className="mt-2 text-xs text-blue-600 font-bold underline text-left">Виж на картата</button>
                                 </div>
                             </div>
@@ -599,10 +604,7 @@ export default function App() {
                     <div key={fountain.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
                         <div className="aspect-video w-full relative"><ImageSlider images={fountain.images} /></div>
                         <div className="p-5">
-                        <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-bold text-slate-800 text-xl leading-tight">{fountain.name}</h3>
-                            {/* Скрито текстово показване на км */}
-                        </div>
+                        <h3 className="font-bold text-slate-800 text-xl leading-tight mb-2">{fountain.name}</h3>
                         <div className="flex flex-wrap gap-2 mb-3">{fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">{feat}</span>))}</div>
                         <p className="text-sm text-gray-500 mb-5 leading-relaxed">{fountain.description}</p>
                         <button onClick={() => selectFountainFromList(fountain)} className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-100 transition-colors"><Navigation size={18} /> Навигирай до там</button>
