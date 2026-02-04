@@ -102,7 +102,7 @@ const MenuItem = ({ icon: Icon, title, children }) => {
 };
 
 const SideMenu = ({ onClose }) => (
-    <div className="fixed inset-0 z-[3000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
+    <div className="fixed inset-0 z-[5000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
         <div className="bg-blue-600 text-white p-6 flex justify-between items-center shadow-md shrink-0">
             <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> Меню</h2>
             <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-full"><X size={28}/></button>
@@ -143,7 +143,7 @@ const VictoryModal = ({ onClose }) => {
     }, []);
 
     return (
-        <div className="fixed inset-0 z-[4000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
+        <div className="fixed inset-0 z-[6000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
             <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative">
                 <div className="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300 p-6 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-50" style={{backgroundImage: 'radial-gradient(circle, white 2px, transparent 2.5px)', backgroundSize: '20px 20px'}}></div>
@@ -171,7 +171,7 @@ const VictoryModal = ({ onClose }) => {
 // --- TUTORIAL ---
 const TutorialOverlay = ({ step, onNext, onFinish }) => {
     return (
-        <div className="fixed inset-0 z-[2000] bg-black/70 flex flex-col animate-in fade-in duration-300" onClick={onNext}>
+        <div className="fixed inset-0 z-[4000] bg-black/70 flex flex-col animate-in fade-in duration-300" onClick={onNext}>
             {step === 1 && (
                 <div className="absolute bottom-20 left-4 text-white max-w-xs">
                     <div className="bg-blue-600 p-4 rounded-xl shadow-xl border-2 border-white/30 mb-2 animate-pulse-slow origin-bottom-left">
@@ -209,7 +209,7 @@ const TutorialOverlay = ({ step, onNext, onFinish }) => {
 // --- WELCOME ---
 const WelcomeScreen = ({ onStart }) => {
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-cyan-900 via-blue-900 to-slate-900 text-white flex flex-col items-center justify-between p-6 text-center animate-in fade-in duration-1000 overflow-y-auto">
+    <div className="fixed inset-0 z-[4000] bg-gradient-to-br from-cyan-900 via-blue-900 to-slate-900 text-white flex flex-col items-center justify-between p-6 text-center animate-in fade-in duration-1000 overflow-y-auto">
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-sm mx-auto mt-10">
           <div className="bg-white/10 p-5 rounded-full mb-6 backdrop-blur-md border border-white/20 shadow-[0_0_30px_rgba(59,130,246,0.3)] animate-pulse">
              <CheshMapLogo size={64} className="text-cyan-300 drop-shadow-lg" />
@@ -330,12 +330,12 @@ export default function App() {
   if (showWelcome) return <WelcomeScreen onStart={startApp} />;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 text-slate-800 font-sans">
+    <div className="flex flex-col h-[100dvh] bg-gray-50 text-slate-800 font-sans">
       {tutorialStep > 0 && <TutorialOverlay step={tutorialStep} onNext={nextTutorialStep} onFinish={finishTutorial} />}
       {showMenu && <SideMenu onClose={() => setShowMenu(false)} />}
       {showVictory && <VictoryModal onClose={() => setShowVictory(false)} />}
 
-      <header className="bg-blue-600 text-white p-4 shadow-lg z-10 flex justify-between items-center relative">
+      <header className="bg-blue-600 text-white p-4 shadow-lg z-10 flex justify-between items-center relative shrink-0">
         <div className="flex items-center gap-2 cursor-pointer active:opacity-80 transition-opacity" onClick={() => setShowMenu(true)}>
             <div className="bg-white p-1.5 rounded-full"><CheshMapLogo className="text-blue-600 w-6 h-6" /></div>
             <div><h1 className="text-xl font-bold tracking-wide leading-none">CheshMap</h1><span className="text-[10px] text-blue-200 uppercase tracking-widest flex items-center gap-1">Меню <MenuIcon size={10}/></span></div>
@@ -364,19 +364,17 @@ export default function App() {
                       <div className="p-3 text-center">
                         <h3 className="font-bold text-blue-900 text-lg mb-1">{fountain.name}</h3>
                         
-                        {/* Разстоянието се показва само ако е избрана */}
                         {targetFountainId === fountain.id && targetDistance && (
                             <div className="text-xs font-bold text-red-500 animate-pulse mb-2">📍 На {targetDistance} км от вас (по въздух)</div>
                         )}
 
-                        {/* Бутонът за Google Maps ВИНАГИ се показва */}
                         <a 
-                            href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                            href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-700 mb-3"
+                            className="w-full bg-blue-600 !text-white hover:!text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-700 mb-3"
                         >
-                            <MapPin size={14} className="text-white"/> Навигирай с Google Maps
+                            <MapPin size={14} className="!text-white"/> Навигирай с Google Maps
                         </a>
 
                         <div className="flex flex-wrap justify-center gap-1 mb-2">
@@ -415,14 +413,14 @@ export default function App() {
                 </div>
             )}
 
-            <button onClick={findNearestFountain} disabled={findingNearest} className="absolute bottom-6 right-4 z-[999] bg-white text-blue-600 p-3 rounded-full shadow-xl border border-blue-100 active:scale-95 transition-all flex items-center gap-2 font-bold text-sm">
+            <button onClick={findNearestFountain} disabled={findingNearest} className="absolute bottom-24 right-4 z-[999] bg-white text-blue-600 p-3 rounded-full shadow-xl border border-blue-100 active:scale-95 transition-all flex items-center gap-2 font-bold text-sm">
                 <Compass className={`w-6 h-6 ${findingNearest ? 'animate-spin' : ''}`} />{findingNearest ? 'Търсене...' : 'Най-близка'}
             </button>
           </div>
         )}
 
         {activeTab === 'list' && (
-          <div className="p-4 overflow-y-auto h-full pb-20 max-w-md mx-auto w-full">
+          <div className="p-4 overflow-y-auto h-full pb-24 max-w-md mx-auto w-full">
             {foundCount > 0 && (
                 <div className="mb-6">
                     <h2 className="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 bg-green-50 p-2 rounded-lg border border-green-100"><CheckCircle size={16}/> Вече открити ({foundCount})</h2>
@@ -460,7 +458,7 @@ export default function App() {
         )}
 
         {activeTab === 'reward' && (
-            <div className="p-6 h-full flex flex-col items-center justify-center text-center bg-white">
+            <div className="p-6 h-full flex flex-col items-center justify-center text-center bg-white pb-24">
                 <div className="bg-yellow-50 p-8 rounded-full mb-6 border-4 border-yellow-100"><Gift className="w-16 h-16 text-yellow-500" /></div>
                 <h2 className="text-2xl font-extrabold text-slate-800 mb-3">Вашата Награда</h2>
                 {foundCount === fountains.length ? (
@@ -481,7 +479,7 @@ export default function App() {
         )}
       </main>
 
-      <nav className="bg-white border-t border-gray-200 flex justify-around p-2 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-20 max-w-md mx-auto w-full">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-[50] max-w-md mx-auto w-full">
         <button onClick={() => setActiveTab('map')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'map' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Map size={24} strokeWidth={activeTab === 'map' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Карта</span></button>
         <button onClick={() => setActiveTab('list')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'list' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><List size={24} strokeWidth={activeTab === 'list' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Списък</span></button>
         <button onClick={() => setActiveTab('reward')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'reward' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Gift size={24} strokeWidth={activeTab === 'reward' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Награда</span></button>
