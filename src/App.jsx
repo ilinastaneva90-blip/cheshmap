@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
-// ТУК БЕШЕ ГРЕШКАТА - добавихме ChevronLeft и ChevronRight
 import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -365,19 +364,20 @@ export default function App() {
                       <div className="p-3 text-center">
                         <h3 className="font-bold text-blue-900 text-lg mb-1">{fountain.name}</h3>
                         
-                        {targetFountainId === fountain.id && (
-                            <div className="mb-3 space-y-2">
-                                {targetDistance && <div className="text-xs font-bold text-red-500 animate-pulse">📍 На {targetDistance} км от вас (по въздух)</div>}
-                                <a 
-                                    href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block w-full bg-blue-500 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-600"
-                                >
-                                    <MapPin size={14} className="text-white"/> Навигирай с Google Maps
-                                </a>
-                            </div>
+                        {/* Разстоянието се показва само ако е избрана */}
+                        {targetFountainId === fountain.id && targetDistance && (
+                            <div className="text-xs font-bold text-red-500 animate-pulse mb-2">📍 На {targetDistance} км от вас (по въздух)</div>
                         )}
+
+                        {/* Бутонът за Google Maps ВИНАГИ се показва */}
+                        <a 
+                            href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-700 mb-3"
+                        >
+                            <MapPin size={14} className="text-white"/> Навигирай с Google Maps
+                        </a>
 
                         <div className="flex flex-wrap justify-center gap-1 mb-2">
                             {fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">{feat}</span>))}
