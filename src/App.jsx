@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
-import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy } from 'lucide-react';
+// ТУК БЕШЕ ГРЕШКАТА - добавихме ChevronLeft и ChevronRight
+import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import confetti from 'canvas-confetti';
@@ -13,7 +14,7 @@ const CheshMapLogo = ({ className, size = 24 }) => (
   </svg>
 );
 
-// --- ИКОНИ ---
+// --- ИКОНИ ЗА КАРТАТА ---
 const createSvgMarkerIcon = (color) => {
     const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1">
@@ -368,7 +369,7 @@ export default function App() {
                             <div className="mb-3 space-y-2">
                                 {targetDistance && <div className="text-xs font-bold text-red-500 animate-pulse">📍 На {targetDistance} км от вас (по въздух)</div>}
                                 <a 
-                                    href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                                    href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="block w-full bg-blue-500 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-600"
