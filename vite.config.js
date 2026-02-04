@@ -32,10 +32,10 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // ТОВА Е КЛЮЧЪТ КЪМ УСПЕХА:
-        // Казваме: "Ако линкът не се намери офлайн, зареди index.html"
-        navigateFallback: '/index.html',
+        // ТОВА Е СПАСЕНИЕТО: Вдигаме лимита за големи снимки до 20MB
+        maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
         
+        navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
         runtimeCaching: [
           {
