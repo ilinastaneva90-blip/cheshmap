@@ -517,10 +517,8 @@ export default function App() {
                       <div className="p-3 text-center">
                         <h3 className="font-bold text-blue-900 text-lg mb-1">{fountain.name}</h3>
                         
-                        {targetFountainId === fountain.id && targetDistance && (
-                            <div className="text-xs font-bold text-red-500 animate-pulse mb-2">📍 На {targetDistance} км от вас (по въздух)</div>
-                        )}
-
+                        {/* Махнат е текстът за дистанция "по въздух", но бутонът за навигация стои */}
+                        
                         <a 
                             href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
                             target="_blank"
@@ -559,7 +557,7 @@ export default function App() {
                         <div>
                             <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">ЦЕЛТА Е:</p>
                             <h3 className="text-lg font-bold text-red-600">{nearestResult ? nearestResult.name : fountains.find(f => f.id === targetFountainId)?.name}</h3>
-                            <p className="text-sm text-gray-600 mt-1">Разстояние: <strong>{nearestResult ? nearestResult.dist : targetDistance} км</strong></p>
+                            {/* Скрито разстояние тук също */}
                         </div>
                         <button onClick={() => {setNearestResult(null); setTargetFountainId(null);}} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} className="text-gray-400" /></button>
                     </div>
@@ -585,11 +583,7 @@ export default function App() {
                                     <h3 className="font-bold text-slate-800 text-sm">{fountain.name}</h3>
                                     <p className="text-xs text-green-600 font-medium mt-1">✅ Добавена в колекцията</p>
                                     
-                                    {userLocation && (
-                                        <p className="text-[10px] text-gray-500 font-bold mt-1 flex items-center gap-1">
-                                            📍 {getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2)} км
-                                        </p>
-                                    )}
+                                    {/* Скрито текстово показване на км */}
 
                                     <button onClick={() => selectFountainFromList(fountain)} className="mt-2 text-xs text-blue-600 font-bold underline text-left">Виж на картата</button>
                                 </div>
@@ -607,11 +601,7 @@ export default function App() {
                         <div className="p-5">
                         <div className="flex justify-between items-start mb-2">
                             <h3 className="font-bold text-slate-800 text-xl leading-tight">{fountain.name}</h3>
-                            {userLocation && (
-                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full whitespace-nowrap">
-                                    📍 {getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2)} км
-                                </span>
-                            )}
+                            {/* Скрито текстово показване на км */}
                         </div>
                         <div className="flex flex-wrap gap-2 mb-3">{fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">{feat}</span>))}</div>
                         <p className="text-sm text-gray-500 mb-5 leading-relaxed">{fountain.description}</p>
