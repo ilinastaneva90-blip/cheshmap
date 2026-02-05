@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, useMap, CircleMarker } from 'react-leaflet';
-import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy, Heart, Filter } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMap, CircleMarker, Popup } from 'react-leaflet';
+import { Map, List, Gift, Navigation, Compass, X, CheckCircle, Camera, Menu as MenuIcon, Info, Heart, MapPin, Trophy } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import confetti from 'canvas-confetti';
@@ -186,7 +186,8 @@ const ImageSlider = ({ images }) => {
   );
 };
 
-// --- ИНФО КАРТА (MODAL) ---
+// --- MODAL ЗА ДЕТАЙЛИ НА КАРТАТА ---
+// Този компонент седи извън картата, за да не забива
 const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
     if (!fountain) return null;
 
@@ -197,7 +198,7 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
     return (
         <div className="absolute inset-0 z-[2000] flex flex-col justify-end sm:justify-center items-center pointer-events-none">
             {/* Тъмен фон при клик затваря */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose}></div>
             
             {/* Самата карта */}
             <div className="bg-white w-full h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-300">
@@ -222,26 +223,26 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                     {/* Екстри */}
                     <div className="flex flex-wrap gap-2 mb-6">
                         {fountain.features?.map((feat, i) => (
-                            <span key={i} className="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
+                            <span key={i} className="text-xs font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
                                 {feat}
                             </span>
                         ))}
                     </div>
 
-                    {/* Описание - ОПРАВЕНО */}
-                    <div className="text-gray-700 text-sm leading-7 mb-8 whitespace-pre-line">
+                    {/* Описание - ТЪМЕН ТЕКСТ И ЯСНО ЧЕТЕНЕ */}
+                    <div className="text-slate-900 text-base leading-7 mb-8 whitespace-pre-line font-medium">
                         {fountain.description}
                     </div>
 
                     {/* Статус */}
                     <div className="space-y-3 pb-6">
                         {fountain.isFound ? (
-                            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-center gap-2 text-green-800 font-bold text-sm">
-                                <CheckCircle size={20} className="text-green-600" />
+                            <div className="bg-green-100 border border-green-300 rounded-xl p-3 flex items-center justify-center gap-2 text-green-900 font-bold text-sm">
+                                <CheckCircle size={20} className="text-green-700" />
                                 Обектът е открит!
                             </div>
                         ) : (
-                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center justify-center gap-2 text-gray-500 text-sm italic">
+                            <div className="bg-gray-100 border border-gray-300 rounded-xl p-3 flex items-center justify-center gap-2 text-gray-700 text-sm font-medium italic">
                                 <Camera size={20} />
                                 Сканирай кода на място, за да отключиш.
                             </div>
@@ -271,7 +272,7 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
     const isLongText = fountain.description.length > 100;
 
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col transition-all">
+        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden flex flex-col transition-all">
             <div className="aspect-video w-full relative bg-gray-100">
                 <ImageSlider images={fountain.images} />
                 {dist && (
@@ -281,17 +282,17 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
                 )}
             </div>
             <div className="p-5">
-                <h3 className="font-bold text-slate-800 text-xl leading-tight mb-2">{fountain.name}</h3>
+                <h3 className="font-bold text-slate-900 text-xl leading-tight mb-2">{fountain.name}</h3>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
                     {fountain.features?.slice(0, 3).map((feat, i) => (
-                        <span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">{feat}</span>
+                        <span key={i} className="text-[10px] font-bold bg-gray-100 text-slate-700 px-2 py-1 rounded border border-gray-300">{feat}</span>
                     ))}
-                    {fountain.features?.length > 3 && <span className="text-[10px] text-gray-400">+{fountain.features.length - 3}</span>}
+                    {fountain.features?.length > 3 && <span className="text-[10px] text-gray-500 font-bold">+{fountain.features.length - 3}</span>}
                 </div>
 
-                {/* Текст с просто скриване/показване */}
-                <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line mb-4">
+                {/* Текст БЕЗ градиенти и филтри */}
+                <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-line mb-4 font-medium">
                     {isExpanded ? fountain.description : (
                         <span>
                             {fountain.description.slice(0, 100)}
@@ -301,16 +302,16 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
                     {isLongText && (
                         <button 
                             onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} 
-                            className="text-blue-600 font-bold ml-1 hover:underline"
+                            className="text-blue-600 font-bold ml-1 hover:underline inline-block p-1"
                         >
-                            {isExpanded ? " Скрий" : " Виж още"}
+                            {isExpanded ? "Скрий" : "Виж още"}
                         </button>
                     )}
                 </div>
 
                 <button 
                     onClick={() => onSelect(fountain)} 
-                    className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-100 transition-colors"
+                    className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-bold py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-200 transition-colors"
                 >
                     <MapPin size={18} /> Виж на картата
                 </button>
@@ -334,7 +335,7 @@ const MenuItem = ({ icon: Icon, title, children }) => {
                 {isOpen ? <ChevronUp size={20} className="text-gray-400"/> : <ChevronDown size={20} className="text-gray-400"/>}
             </button>
             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
-                <div className="text-gray-600 text-sm leading-relaxed pl-8 pr-2">
+                <div className="text-slate-700 text-sm leading-relaxed pl-8 pr-2 font-medium">
                     {children}
                 </div>
             </div>
