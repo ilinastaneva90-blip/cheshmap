@@ -157,7 +157,7 @@ const FOUNTAINS_DATA = [
 const MapController = ({ targetCoords }) => {
     const map = useMap();
     useEffect(() => {
-        if (targetCoords) {
+        if (targetCoords && Array.isArray(targetCoords) && targetCoords.length === 2) {
             map.flyTo(targetCoords, 18, { animate: true, duration: 1.5 });
         }
     }, [targetCoords]);
@@ -186,8 +186,8 @@ const ImageSlider = ({ images }) => {
   );
 };
 
-// --- ИНФО КАРТА (MODAL - FIXED POSITION) ---
-// ВАЖНО: Използваме fixed, за да е най-отгоре и махаме blur ефектите от съдържанието
+// --- ИНФО КАРТА (MODAL) - ОПРАВЕНА ---
+// Z-index е 12000, за да е над всичко. Използваме fixed.
 const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
     if (!fountain) return null;
 
@@ -196,11 +196,11 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
         : null;
 
     return (
-        <div className="fixed inset-0 z-[9999] flex flex-col justify-end sm:justify-center items-center">
-            {/* Тъмен фон (Backdrop) */}
+        <div className="fixed inset-0 z-[12000] flex flex-col justify-end sm:justify-center items-center">
+            {/* Тъмен фон */}
             <div className="absolute inset-0 bg-black/60 transition-opacity" onClick={onClose}></div>
             
-            {/* Самата карта (Modal Content) - ПЛЪТНО БЯЛ ФОН */}
+            {/* Контейнер на модала */}
             <div className="relative bg-white w-full max-h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
                 
                 {/* Снимки */}
@@ -216,8 +216,8 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                     )}
                 </div>
 
-                {/* Текст и бутони (Скролващо се) - ПЛЪТНО БЯЛ ФОН */}
-                <div className="flex-1 overflow-y-auto bg-white p-6">
+                {/* Текст и бутони */}
+                <div className="flex-1 overflow-y-auto bg-white p-6 pb-10">
                     <h2 className="text-2xl font-bold text-slate-900 leading-tight mb-3">{fountain.name}</h2>
 
                     {/* Екстри */}
@@ -229,13 +229,13 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                         ))}
                     </div>
 
-                    {/* Описание - ТЪМЕН ТЕКСТ (ЧЕРЕН) */}
+                    {/* Описание - ЧЕРЕН ТЕКСТ */}
                     <div className="text-slate-900 text-base leading-7 mb-8 whitespace-pre-line font-medium">
                         {fountain.description}
                     </div>
 
-                    {/* Статус */}
-                    <div className="space-y-3 pb-6">
+                    {/* Статус и Навигация */}
+                    <div className="space-y-4 pb-safe">
                         {fountain.isFound ? (
                             <div className="bg-green-100 border border-green-300 rounded-xl p-3 flex items-center justify-center gap-2 text-green-900 font-bold text-sm">
                                 <CheckCircle size={20} className="text-green-700" />
@@ -248,13 +248,14 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                             </div>
                         )}
 
+                        {/* ОПРАВЕН ЛИНК ЗА GOOGLE MAPS */}
                         <a 
-                            href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                            href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all no-underline"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all no-underline text-lg"
                         >
-                            <Navigation size={20} />
+                            <Navigation size={22} />
                             Навигирай до тук
                         </a>
                     </div>
@@ -289,7 +290,6 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
                     {fountain.features?.length > 3 && <span className="text-[10px] text-gray-500 font-bold">+{fountain.features.length - 3}</span>}
                 </div>
 
-                {/* Текст БЕЗ градиенти и филтри */}
                 <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-line mb-4 font-medium">
                     {isExpanded ? fountain.description : (
                         <span>
@@ -342,7 +342,7 @@ const MenuItem = ({ icon: Icon, title, children }) => {
 };
 
 const SideMenu = ({ onClose }) => (
-    <div className="fixed inset-0 z-[3000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
+    <div className="fixed inset-0 z-[11000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
         <div className="bg-blue-600 text-white p-6 flex justify-between items-center shadow-md shrink-0">
             <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> CheshMap Меню</h2>
             <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-full"><X size={28}/></button>
@@ -396,7 +396,7 @@ const VictoryModal = ({ onClose }) => {
     }, []);
 
     return (
-        <div className="fixed inset-0 z-[6000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
+        <div className="fixed inset-0 z-[12000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
             <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative">
                 <div className="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300 p-6 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-50" style={{backgroundImage: 'radial-gradient(circle, white 2px, transparent 2.5px)', backgroundSize: '20px 20px'}}></div>
@@ -583,8 +583,12 @@ export default function App() {
             if (nearestId) {
                 const nearest = fountains.find(f => f.id === nearestId);
                 setActiveTab('map'); 
-                setFlyToCoords(nearest.coords);
-                setSelectedFountain(nearest); // Отваряме модала веднага
+                
+                // Проверка за валидни координати преди летене
+                if (nearest && nearest.coords) {
+                     setFlyToCoords(nearest.coords);
+                     setSelectedFountain(nearest);
+                }
             }
             setFindingNearest(false);
         },
@@ -687,7 +691,7 @@ export default function App() {
         )}
 
         {activeTab === 'list' && (
-          <div className="p-4 overflow-y-auto h-full pb-24 max-w-md mx-auto w-full">
+          <div className="p-4 overflow-y-auto h-full pb-32 max-w-md mx-auto w-full">
             {/* БУТОН ЗА ВКЛЮЧВАНЕ НА ЛОКАЦИЯ */}
             {!userLocation && (
                 <button onClick={enableLocationForList} className="w-full bg-blue-100 text-blue-700 text-xs font-bold py-3 px-4 rounded-xl mb-4 flex items-center justify-center gap-2 border border-blue-200 animate-pulse">
@@ -775,7 +779,7 @@ export default function App() {
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-[9999] max-w-md mx-auto w-full">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-[10000] max-w-md mx-auto w-full">
         <button onClick={() => {setActiveTab('map'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'map' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Map size={24} strokeWidth={activeTab === 'map' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Карта</span></button>
         <button onClick={() => {setActiveTab('list'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'list' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><List size={24} strokeWidth={activeTab === 'list' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Списък</span></button>
         <button onClick={() => {setActiveTab('reward'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'reward' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Gift size={24} strokeWidth={activeTab === 'reward' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Награда</span></button>
