@@ -35,7 +35,7 @@ const FOUNTAINS_DATA = [
     id: 1, 
     name: "Чешма Център", 
     coords: [41.61487552647749, 25.006342871370794], 
-    description: "Главната, централна чешма на с.Баните, в непосредствена близост до Санаториума; Минерална вода – хипертермална 42⁰С, рН 9,4 с обща минерализация 0,94 g/l.", 
+    description: "Главната, централна чешма на с.Баните, в непосредствена близост до Санаториума. Минерална вода – хипертермална 42⁰С, рН 9,4 с обща минерализация 0,94 g/l.", 
     features: ["Минерална вода", "Изворна вода", "Пейка"], 
     images: ["/images/1.jpg", "/images/2.jpg", "/images/3.jpg"] 
   },
@@ -107,7 +107,7 @@ const FOUNTAINS_DATA = [
     id: 10, 
     name: "Малчевата чешма", 
     coords: [41.62068278273291, 25.007691773734983], 
-    description: "Наричат я още „Любовната чешма“. Тук камъкът оживява в уникален стенопис, изобразяващ римски мост и родопски къщи. Дар от Мина и Илчо Малчеви за техните деца, но отворен с щедрост за всеки пътник.", 
+    description: "Наричат я още „Любовната чешма“. \n\nТук камъкът оживява в уникален стенопис, изобразяващ римски мост и родопски къщи. Дар от Мина и Илчо Малчеви за техните деца, но отворен с щедрост за всеки пътник.", 
     features: ["Изворна вода", "Беседка", "Барбекю", "Паркинг", "Стенопис"], 
     images: ["/images/17.jpg"] 
   },
@@ -195,12 +195,12 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
         : null;
 
     return (
-        <div className="absolute inset-0 z-[2000] flex flex-col justify-end sm:justify-center items-center pointer-events-none">
+        <div className="absolute inset-0 z-[2000] flex flex-col justify-end pointer-events-none">
             {/* Тъмен фон */}
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose}></div>
             
             {/* Картата с детайли */}
-            <div className="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[85vh] animate-in slide-in-from-bottom duration-300">
+            <div className="bg-white w-full h-[85vh] sm:h-auto sm:max-h-[85vh] sm:max-w-md sm:mx-auto sm:mb-10 sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-300">
                 
                 {/* Хедър на картата */}
                 <div className="relative h-64 shrink-0">
@@ -216,13 +216,13 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                 </div>
 
                 {/* Съдържание */}
-                <div className="p-6 overflow-y-auto">
+                <div className="p-6 overflow-y-auto flex-1 bg-white">
                     <div className="flex justify-between items-start mb-2">
                         <h2 className="text-2xl font-bold text-slate-900 leading-tight">{fountain.name}</h2>
                     </div>
 
                     {/* Екстри */}
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-2 mb-6">
                         {fountain.features?.map((feat, i) => (
                             <span key={i} className="text-xs font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-100">
                                 {feat}
@@ -230,34 +230,35 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                         ))}
                     </div>
 
-                    {/* Описание (Пълно) */}
-                    <div className="prose prose-sm text-gray-600 mb-6 leading-relaxed">
+                    {/* Описание (Пълно, форматирано) */}
+                    <div className="text-gray-600 mb-8 text-sm leading-7 whitespace-pre-line">
                         {fountain.description}
                     </div>
 
-                    {/* Статус */}
-                    {fountain.isFound ? (
-                        <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-3 text-green-800 font-bold text-sm mb-4">
-                            <CheckCircle size={20} className="text-green-600" />
-                            Обектът е открит!
-                        </div>
-                    ) : (
-                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 text-gray-500 text-sm mb-4 italic">
-                            <Camera size={20} />
-                            Сканирай кода на място, за да отключиш.
-                        </div>
-                    )}
+                    {/* Статус и бутони в долната част */}
+                    <div className="pb-4">
+                        {fountain.isFound ? (
+                            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-3 text-green-800 font-bold text-sm mb-4">
+                                <CheckCircle size={20} className="text-green-600" />
+                                Обектът е открит!
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 text-gray-500 text-sm mb-4 italic">
+                                <Camera size={20} />
+                                Сканирай кода на място, за да отключиш.
+                            </div>
+                        )}
 
-                    {/* Бутон за навигация */}
-                    <a 
-                        href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all no-underline"
-                    >
-                        <Navigation size={20} />
-                        Навигирай до тук
-                    </a>
+                        <a 
+                            href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all no-underline"
+                        >
+                            <Navigation size={20} />
+                            Навигирай до тук
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -294,14 +295,20 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
                 </div>
 
                 {/* Текст с разпъване */}
-                <div className="text-sm text-gray-500 mb-4 leading-relaxed relative">
-                    <p className={!isExpanded ? "line-clamp-2" : ""}>
+                <div className="relative mb-4">
+                    <div className={`text-sm text-gray-600 leading-relaxed whitespace-pre-line transition-all duration-300 ${!isExpanded ? 'max-h-16 overflow-hidden' : ''}`}>
                         {fountain.description}
-                    </p>
+                    </div>
+                    
+                    {/* Градиент за скриване, когато е свит */}
+                    {!isExpanded && isLongText && (
+                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+                    )}
+
                     {isLongText && (
                         <button 
                             onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} 
-                            className="text-blue-600 font-bold text-xs mt-1 hover:underline flex items-center gap-1"
+                            className="text-blue-600 font-bold text-xs mt-1 hover:underline flex items-center gap-1 bg-white pr-2 z-10 relative"
                         >
                             {isExpanded ? "Скрий" : "Виж още..."}
                         </button>
