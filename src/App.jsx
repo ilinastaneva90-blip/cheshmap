@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, CircleMarker, Popup } from 'react-leaflet';
-import { Map, List, Gift, Navigation, Compass, X, CheckCircle, Camera, Menu as MenuIcon, Info, Heart, MapPin, Trophy } from 'lucide-react';
+import { Map, List, Gift, Navigation, Compass, X, CheckCircle, Camera, Menu as MenuIcon, Info, Heart, MapPin, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import confetti from 'canvas-confetti';
@@ -16,16 +16,16 @@ const CheshMapLogo = ({ className, size = 24 }) => (
 // --- ИКОНИ ЗА КАРТАТА ---
 const createSvgMarkerIcon = (color) => {
     const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1.5">
           <path fill-rule="evenodd" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5 0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
           <path d="M12 11.5c-1.38 0-2.5-1.12-2.5-2.5C9.5 7.62 12 5.5 12 5.5s2.5 2.12 2.5 3.5c0 1.38-1.12 2.5-2.5 2.5z" fill="white"/>
         </svg>`;
     return 'data:image/svg+xml;base64,' + btoa(svg);
 }
 
-const BlueMarkerIcon = L.icon({ iconUrl: createSvgMarkerIcon('#2563eb'), iconSize: [38, 38], iconAnchor: [19, 38], popupAnchor: [0, -38] });
+const BlueMarkerIcon = L.icon({ iconUrl: createSvgMarkerIcon('#2563eb'), iconSize: [42, 42], iconAnchor: [21, 42], popupAnchor: [0, -42] });
 const RedMarkerIcon = L.icon({ iconUrl: createSvgMarkerIcon('#dc2626'), iconSize: [48, 48], iconAnchor: [24, 48], popupAnchor: [0, -48] });
-const GreenMarkerIcon = L.icon({ iconUrl: createSvgMarkerIcon('#16a34a'), iconSize: [38, 38], iconAnchor: [19, 38], popupAnchor: [0, -38] });
+const GreenMarkerIcon = L.icon({ iconUrl: createSvgMarkerIcon('#16a34a'), iconSize: [42, 42], iconAnchor: [21, 42], popupAnchor: [0, -42] });
 
 const PLACEHOLDER_IMG = "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&q=80&w=1000";
 
@@ -153,6 +153,14 @@ const FOUNTAINS_DATA = [
   }
 ];
 
+// --- HELPER FUNCTIONS ---
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  var R = 6371; var dLat = deg2rad(lat2-lat1); var dLon = deg2rad(lon2-lon1); 
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; 
+}
+function deg2rad(deg) { return deg * (Math.PI/180) }
+
 // --- COMPONENTS ---
 const MapController = ({ targetCoords }) => {
     const map = useMap();
@@ -166,19 +174,28 @@ const MapController = ({ targetCoords }) => {
 
 const ImageSlider = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  if (!images || images.length === 0) return <div className="h-full bg-gray-200 flex items-center justify-center text-gray-400">Няма снимка</div>;
+  
+  if (!images || images.length === 0) {
+      return <div className="h-full bg-gray-200 flex items-center justify-center text-gray-400">Няма снимка</div>;
+  }
+
   const nextSlide = (e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1)); };
   const prevSlide = (e) => { e.stopPropagation(); setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1)); };
 
   return (
     <div className="relative w-full h-full bg-gray-100 group overflow-hidden">
-      <img src={images[currentIndex]} alt="Cheshma" className="w-full h-full object-cover transition-all duration-500"/>
+      <img 
+        src={images[currentIndex]} 
+        alt="Cheshma" 
+        className="w-full h-full object-cover transition-all duration-500"
+        onError={(e) => { e.target.src = PLACEHOLDER_IMG; }}
+      />
       {images.length > 1 && (
         <>
-            <button onClick={prevSlide} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"><ChevronLeft size={20} /></button>
-            <button onClick={nextSlide} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"><ChevronRight size={20} /></button>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                {images.map((_, idx) => (<div key={idx} className={`w-1.5 h-1.5 rounded-full ${idx === currentIndex ? 'bg-white' : 'bg-white/50'}`} />))}
+            <button onClick={prevSlide} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 z-10"><ChevronLeft size={24} /></button>
+            <button onClick={nextSlide} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 z-10"><ChevronRight size={24} /></button>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                {images.map((_, idx) => (<div key={idx} className={`w-2 h-2 rounded-full shadow ${idx === currentIndex ? 'bg-white' : 'bg-white/50'}`} />))}
             </div>
         </>
       )}
@@ -186,8 +203,7 @@ const ImageSlider = ({ images }) => {
   );
 };
 
-// --- ИНФО КАРТА (MODAL) - ОПРАВЕНА ---
-// Z-index е 12000, за да е над всичко. Използваме fixed.
+// --- MODAL ЗА ДЕТАЙЛИ ---
 const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
     if (!fountain) return null;
 
@@ -195,83 +211,79 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
         ? getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2)
         : null;
 
+    const googleMapsUrl = `http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`;
+
     return (
-        <div className="fixed inset-0 z-[12000] flex flex-col justify-end sm:justify-center items-center">
-            {/* Тъмен фон */}
+        <div className="fixed inset-0 z-[12000] flex flex-col justify-end items-center h-[100dvh]">
             <div className="absolute inset-0 bg-black/60 transition-opacity" onClick={onClose}></div>
             
-            {/* Контейнер на модала */}
-            <div className="relative bg-white w-full max-h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
+            <div className="relative bg-white w-full max-h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-t-2xl rounded-t-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
                 
-                {/* Снимки */}
                 <div className="relative h-64 shrink-0 bg-gray-200">
                     <ImageSlider images={fountain.images} />
-                    <button onClick={onClose} className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10 text-gray-800">
-                        <X size={24} />
+                    <button onClick={onClose} className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors z-20 text-gray-900">
+                        <X size={26} />
                     </button>
                     {dist && (
-                        <div className="absolute bottom-4 left-4 bg-white px-3 py-1 rounded-full text-xs font-bold text-blue-700 shadow-sm flex items-center gap-1">
-                            📍 {dist} км
+                        <div className="absolute bottom-4 left-4 bg-white/95 px-3 py-1.5 rounded-full text-xs font-bold text-blue-700 shadow-md">
+                            📍 {dist} км (по въздух)
                         </div>
                     )}
                 </div>
 
-                {/* Текст и бутони */}
-                <div className="flex-1 overflow-y-auto bg-white p-6 pb-10">
-                    <h2 className="text-2xl font-bold text-slate-900 leading-tight mb-3">{fountain.name}</h2>
+                <div className="flex-1 overflow-y-auto bg-white p-6 pb-32">
+                    <h2 className="text-2xl font-extrabold text-slate-900 leading-tight mb-3">{fountain.name}</h2>
 
-                    {/* Екстри */}
                     <div className="flex flex-wrap gap-2 mb-6">
                         {fountain.features?.map((feat, i) => (
-                            <span key={i} className="text-xs font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
+                            <span key={i} className="text-xs font-bold bg-blue-50 text-blue-800 px-3 py-1.5 rounded-full border border-blue-100">
                                 {feat}
                             </span>
                         ))}
                     </div>
 
-                    {/* Описание - ЧЕРЕН ТЕКСТ */}
-                    <div className="text-slate-900 text-base leading-7 mb-8 whitespace-pre-line font-medium">
+                    <div className="text-slate-800 text-base leading-7 mb-8 whitespace-pre-line font-medium">
                         {fountain.description}
                     </div>
 
-                    {/* Статус и Навигация */}
-                    <div className="space-y-4 pb-safe">
+                    <div className="mb-6">
                         {fountain.isFound ? (
-                            <div className="bg-green-100 border border-green-300 rounded-xl p-3 flex items-center justify-center gap-2 text-green-900 font-bold text-sm">
-                                <CheckCircle size={20} className="text-green-700" />
+                            <div className="bg-green-100 border border-green-200 rounded-xl p-4 flex items-center justify-center gap-2 text-green-900 font-bold">
+                                <CheckCircle size={22} className="text-green-700" />
                                 Обектът е открит!
                             </div>
                         ) : (
-                            <div className="bg-gray-100 border border-gray-300 rounded-xl p-3 flex items-center justify-center gap-2 text-gray-700 text-sm font-medium italic">
-                                <Camera size={20} />
+                            <div className="bg-gray-100 border border-gray-200 rounded-xl p-4 flex items-center justify-center gap-2 text-gray-600 font-medium italic">
+                                <Camera size={22} />
                                 Сканирай кода на място, за да отключиш.
                             </div>
                         )}
-
-                        {/* ОПРАВЕН ЛИНК ЗА GOOGLE MAPS */}
-                        <a 
-                            href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all no-underline text-lg"
-                        >
-                            <Navigation size={22} />
-                            Навигирай до тук
-                        </a>
                     </div>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-8 z-30">
+                    <a 
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all text-lg no-underline"
+                    >
+                        <Navigation size={22} />
+                        Навигирай с Google Maps
+                    </a>
                 </div>
             </div>
         </div>
     );
 };
 
-// --- КАРТА В СПИСЪКА ---
+// --- LIST CARD ---
 const FountainListCard = ({ fountain, dist, onSelect }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const isLongText = fountain.description.length > 100;
 
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden flex flex-col transition-all">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col mb-4">
             <div className="aspect-video w-full relative bg-gray-100">
                 <ImageSlider images={fountain.images} />
                 {dist && (
@@ -280,27 +292,26 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
                     </div>
                 )}
             </div>
-            <div className="p-5 bg-white">
-                <h3 className="font-bold text-slate-900 text-xl leading-tight mb-2">{fountain.name}</h3>
+            <div className="p-5">
+                <h3 className="font-bold text-slate-900 text-lg mb-2">{fountain.name}</h3>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
                     {fountain.features?.slice(0, 3).map((feat, i) => (
-                        <span key={i} className="text-[10px] font-bold bg-gray-100 text-slate-700 px-2 py-1 rounded border border-gray-300">{feat}</span>
+                        <span key={i} className="text-[10px] font-bold bg-gray-50 text-slate-700 px-2 py-1 rounded border border-gray-200">{feat}</span>
                     ))}
-                    {fountain.features?.length > 3 && <span className="text-[10px] text-gray-500 font-bold">+{fountain.features.length - 3}</span>}
                 </div>
 
-                <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-line mb-4 font-medium">
+                <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line mb-4">
                     {isExpanded ? fountain.description : (
                         <span>
-                            {fountain.description.slice(0, 100)}
+                            {fountain.description.slice(0, 90)}
                             {isLongText && "..."}
                         </span>
                     )}
                     {isLongText && (
                         <button 
                             onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} 
-                            className="text-blue-600 font-bold ml-1 hover:underline inline-block p-1"
+                            className="text-blue-600 font-bold ml-1"
                         >
                             {isExpanded ? "Скрий" : "Виж още"}
                         </button>
@@ -309,7 +320,7 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
 
                 <button 
                     onClick={() => onSelect(fountain)} 
-                    className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-bold py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-200 transition-colors"
+                    className="w-full bg-white text-blue-600 border border-blue-200 font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors"
                 >
                     <MapPin size={18} /> Виж на картата
                 </button>
@@ -317,194 +328,6 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
         </div>
     );
 };
-
-// --- МЕНЮ АКОРДЕОН ---
-const MenuItem = ({ icon: Icon, title, children }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div className="border-b border-gray-100 last:border-0 pb-4">
-            <button 
-                onClick={() => setIsOpen(!isOpen)} 
-                className="w-full flex justify-between items-center py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
-            >
-                <div className="flex items-center gap-3 text-blue-900 font-bold text-lg">
-                    <Icon size={20} className="text-blue-600"/> {title}
-                </div>
-                {isOpen ? <ChevronUp size={20} className="text-gray-400"/> : <ChevronDown size={20} className="text-gray-400"/>}
-            </button>
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
-                <div className="text-slate-700 text-sm leading-relaxed pl-8 pr-2 font-medium">
-                    {children}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const SideMenu = ({ onClose }) => (
-    <div className="fixed inset-0 z-[11000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
-        <div className="bg-blue-600 text-white p-6 flex justify-between items-center shadow-md shrink-0">
-            <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> CheshMap Меню</h2>
-            <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-full"><X size={28}/></button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            <MenuItem icon={Info} title="За Община Баните">
-                Ти се намираш в минералното сърце на Родопа планина. Тук, водата и хората лекуват, затова специално за теб създадохме маршрут от история, култура и традиции. 
-                <br/><br/>
-                В приложението CheshMap ще откриеш някои от най-интересните и значими чешми в региона.
-                <br/><br/>
-                <strong className="text-blue-700">Община Баните ти пожелава незабравимо приключение по Пътя на водата!</strong>
-            </MenuItem>
-            
-            <MenuItem icon={Heart} title="Защо чешми?">
-                <strong className="text-blue-700">Повече от просто вода</strong>
-                <br/><br/>
-                В Родопите водата е свещена, а чешмата е памет. Тук хората не градят просто извори – те съграждат „хаир“ (добротворство). 
-                <br/><br/>
-                Всяка чешма и беседка по пътя ти е построена с мисъл за пътника – да спреш, да отпиеш ледена вода, да починеш под сянката и да благословиш майстора.
-                <br/><br/>
-                В община Баните водата лекува не само тялото, но и душата. Създадохме този маршрут, за да ти покажем скритите архитектурни бижута на нашия край – местата, където местните се събират, празнуват и споделят.
-            </MenuItem>
-
-            <MenuItem icon={Camera} title="Как работи играта?">
-                <strong className="text-blue-700">Предизвикателството в Стъпки:</strong>
-                <br/><br/>
-                📍 <strong>1. Открий:</strong> Използвай картата, за да намериш маркираните чешми и кътове за отдих.
-                <br/><br/>
-                📸 <strong>2. Сканирай:</strong> На всяка чешма има скрит QR код. Сканирай го с камерата на телефона си, за да "отключиш" обекта.
-                <br/><br/>
-                🏆 <strong>3. Спечели:</strong> Събери всички кодове и ела в Туристическия център на Община Баните, за да получиш своя сертификат "Пазител на водата" и специален подарък.
-            </MenuItem>
-
-            <MenuItem icon={Phone} title="Контакти">
-                <strong>Община Баните</strong><br/>
-                с. Баните, ул. "Стефан Стамболов" 3<br/>
-                тел: 03025/22-20<br/>
-                email: obbanite@abv.bg
-            </MenuItem>
-        </div>
-        <div className="p-4 bg-gray-50 text-center text-xs text-gray-400 border-t border-gray-200 shrink-0">
-            CheshMap v1.0 • 2026
-        </div>
-    </div>
-);
-
-// --- СЕРТИФИКАТ (ФИНАЛ) ---
-const VictoryModal = ({ onClose }) => {
-    useEffect(() => {
-        try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(e) {}
-    }, []);
-
-    return (
-        <div className="fixed inset-0 z-[12000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
-            <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative">
-                <div className="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300 p-6 text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-50" style={{backgroundImage: 'radial-gradient(circle, white 2px, transparent 2.5px)', backgroundSize: '20px 20px'}}></div>
-                    <Trophy size={64} className="text-white mx-auto drop-shadow-md relative z-10 mb-2" />
-                    <h2 className="text-2xl font-black text-white uppercase tracking-widest drop-shadow-sm relative z-10">ПОБЕДА!</h2>
-                </div>
-                <div className="p-6 text-center space-y-4">
-                    <h3 className="text-xl font-bold text-blue-900">Ти премина Пътя на водата! 🎉</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                        Поздравления! Ти обиколи най-емблематичните кътчета на община Баните и се докосна до магията на Родопа планина.
-                    </p>
-                    
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left space-y-2 mt-2">
-                        <p className="font-bold text-blue-800 text-sm text-center mb-2">Твоят сертификат и подарък те очакват!</p>
-                        <div className="text-xs text-gray-700 space-y-1.5">
-                            <p>📍 <strong>Къде:</strong> Община Баните, Информационен център</p>
-                            <p>⏰ <strong>Работно време:</strong> Пон-Пет, 08:00 - 17:00 ч.</p>
-                            <p>📞 <strong>Телефон за връзка:</strong> 0883 33 71 81</p>
-                        </div>
-                    </div>
-                </div>
-                <button onClick={onClose} className="w-full py-4 bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors">ЗАТВОРИ</button>
-            </div>
-        </div>
-    );
-};
-
-// --- TUTORIAL ---
-const TutorialOverlay = ({ step, onNext, onFinish }) => {
-    return (
-        <div className="fixed inset-0 z-[4000] bg-black/70 flex flex-col animate-in fade-in duration-300" onClick={onNext}>
-            {step === 1 && (
-                <div className="absolute bottom-20 left-4 text-white max-w-xs">
-                    <div className="bg-blue-600 p-4 rounded-xl shadow-xl border-2 border-white/30 mb-2 animate-pulse-slow origin-bottom-left">
-                        <h3 className="font-bold text-lg mb-1">Разгледайте картата</h3>
-                        <p className="text-sm opacity-90">Менюто долу ви позволява да виждате списък с всички обекти.</p>
-                    </div>
-                    <ArrowDown size={40} className="text-white ml-6 animate-bounce" />
-                </div>
-            )}
-            {step === 2 && (
-                <div className="absolute bottom-40 right-4 text-white max-w-xs flex flex-col items-end">
-                    <div className="bg-blue-600 p-4 rounded-xl shadow-xl border-2 border-white/30 mb-2 text-right animate-pulse-slow origin-bottom-right">
-                        <h3 className="font-bold text-lg mb-1 flex items-center justify-end gap-2"><Compass size={20}/> Вашето начало</h3>
-                        <p className="text-sm opacity-90">Натиснете тук, за да намерите най-близката чешма.</p>
-                    </div>
-                    <ArrowDown size={40} className="text-white mr-8 animate-bounce" />
-                </div>
-            )}
-            {step === 3 && (
-                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                    <div className="bg-white text-slate-800 p-6 rounded-3xl shadow-2xl max-w-sm border-4 border-blue-500 animate-in zoom-in duration-500">
-                        <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Camera size={32} className="text-blue-600"/>
-                        </div>
-                        <h3 className="font-bold text-xl mb-2">Как се отключва чешма?</h3>
-                        <p className="text-gray-600 mb-4">Намерете стикера на чешмата и <strong>сканирайте QR кода с камерата на телефона</strong>.</p>
-                        <button onClick={(e) => { e.stopPropagation(); onFinish(); }} className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm">Разбрах</button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-// --- WELCOME (НАЧАЛЕН ЕКРАН) ---
-const WelcomeScreen = ({ onStart }) => {
-  return (
-    <div className="fixed inset-0 z-[4000] bg-gradient-to-br from-cyan-900 via-blue-900 to-slate-900 text-white flex flex-col items-center justify-between p-6 text-center animate-in fade-in duration-1000 overflow-y-auto">
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-sm mx-auto mt-10">
-          <div className="bg-white/10 p-5 rounded-full mb-6 backdrop-blur-md border border-white/20 shadow-[0_0_30px_rgba(59,130,246,0.3)] animate-pulse">
-             <CheshMapLogo size={64} className="text-cyan-300 drop-shadow-lg" />
-          </div>
-          
-          <h1 className="text-5xl font-extrabold mb-1 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white">CheshMap</h1>
-          <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Приложение на община Баните</p>
-          
-          <div className="bg-black/30 p-6 rounded-3xl backdrop-blur-md w-full mb-8 border border-white/10 shadow-2xl">
-            <h2 className="text-2xl font-bold mb-3 text-white">Пътят на водата<br/> <span className="text-xl font-normal text-cyan-200">Открий душата на Родопа планина</span></h2>
-            <p className="text-sm leading-relaxed mb-0 text-gray-200 font-light">
-                Обиколи едни от най-красивите чешми на община Баните, събери кодовете и стани част от легендата.
-            </p>
-          </div>
-
-          <button onClick={onStart} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-cyan-500/30 hover:scale-105 hover:shadow-cyan-500/50 active:scale-95 transition-all flex items-center gap-2 mb-10">
-            Започни приключението <ChevronRight />
-          </button>
-      </div>
-      <div className="w-full pb-4">
-        <p className="text-[11px] text-cyan-200/60 font-light flex flex-col items-center gap-1 text-center px-4">
-            Вдъхновено от труда на Маргарита и Алекси Димитрови
-        </p>
-      </div>
-    </div>
-  );
-};
-
-function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  var R = 6371; var dLat = deg2rad(lat2-lat1); var dLon = deg2rad(lon2-lon1); 
-  var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; 
-}
-function deg2rad(deg) { return deg * (Math.PI/180) }
-
-const STORAGE_KEY = 'cheshmap_progress_v1';
-const TUTORIAL_KEY = 'cheshmap_tutorial_seen_v1';
-const getSavedProgress = () => { try { const saved = localStorage.getItem(STORAGE_KEY); return saved ? JSON.parse(saved) : []; } catch (e) { return []; } };
-const saveProgress = (ids) => { localStorage.setItem(STORAGE_KEY, JSON.stringify(ids)); };
 
 // --- MAIN APP ---
 export default function App() {
@@ -517,107 +340,111 @@ export default function App() {
   const [foundCount, setFoundCount] = useState(0);
   const [flyToCoords, setFlyToCoords] = useState(null);
   const [findingNearest, setFindingNearest] = useState(false);
-  
   const [userLocation, setUserLocation] = useState(null);
   const [scanResult, setScanResult] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
-
-  // MODAL STATE
   const [selectedFountain, setSelectedFountain] = useState(null);
 
-  // Извличане на всички уникални екстри за филтъра
   const uniqueFeatures = useMemo(() => {
     const allFeatures = new Set();
     FOUNTAINS_DATA.forEach(f => f.features?.forEach(feat => allFeatures.add(feat)));
     return Array.from(allFeatures).sort();
   }, []);
 
+  const STORAGE_KEY = 'cheshmap_progress_v1';
+  const TUTORIAL_KEY = 'cheshmap_tutorial_seen_v1';
+
   useEffect(() => {
-    // Вземаме само прогреса, без GPS
-    const savedIds = getSavedProgress();
-    const params = new URLSearchParams(window.location.search);
-    const scanId = parseInt(params.get('scan'));
-    const tutorialSeen = localStorage.getItem(TUTORIAL_KEY);
-    let newFoundId = null;
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const savedIds = saved ? JSON.parse(saved) : [];
+        
+        const params = new URLSearchParams(window.location.search);
+        const scanId = parseInt(params.get('scan'));
+        const tutorialSeen = localStorage.getItem(TUTORIAL_KEY);
+        let newFoundId = null;
 
-    if (scanId && FOUNTAINS_DATA.find(f => f.id === scanId)) {
-        if (!savedIds.includes(scanId)) { savedIds.push(scanId); saveProgress(savedIds); newFoundId = scanId; } 
-        else { newFoundId = scanId; }
-    }
-    const updatedFountains = FOUNTAINS_DATA.map(f => ({ ...f, isFound: savedIds.includes(f.id) }));
-    setFountains(updatedFountains);
-    setFoundCount(savedIds.length);
+        if (scanId && FOUNTAINS_DATA.find(f => f.id === scanId)) {
+            if (!savedIds.includes(scanId)) { savedIds.push(scanId); localStorage.setItem(STORAGE_KEY, JSON.stringify(savedIds)); newFoundId = scanId; } 
+            else { newFoundId = scanId; }
+        }
+        
+        setFountains(FOUNTAINS_DATA.map(f => ({ ...f, isFound: savedIds.includes(f.id) })));
+        setFoundCount(savedIds.length);
 
-    if (newFoundId) {
-        const found = FOUNTAINS_DATA.find(f => f.id === newFoundId);
-        setActiveTab('map'); setFlyToCoords(found.coords); setScanResult(found);
-        setTimeout(() => setScanResult(null), 6000);
-        if (savedIds.length === FOUNTAINS_DATA.length) { setTimeout(() => setShowVictory(true), 2000); }
-    } else {
-        if (!tutorialSeen) { setShowWelcome(true); }
+        if (newFoundId) {
+            const found = FOUNTAINS_DATA.find(f => f.id === newFoundId);
+            setActiveTab('map'); 
+            setFlyToCoords(found.coords); 
+            setScanResult(found);
+            setTimeout(() => setScanResult(null), 6000);
+            if (savedIds.length === FOUNTAINS_DATA.length) { setTimeout(() => setShowVictory(true), 2000); }
+        } else {
+            if (!tutorialSeen) { setShowWelcome(true); }
+        }
+        if (scanId) { window.history.replaceState({}, document.title, "/"); }
+    } catch (e) {
+        console.error("Error loading progress", e);
     }
-    if (scanId) { window.history.replaceState({}, document.title, "/"); }
   }, []);
 
-  // Функция за пускане на локация
   const enableLocationForList = () => {
     if (!navigator.geolocation) { alert("Браузърът не поддържа GPS."); return; }
     navigator.geolocation.getCurrentPosition(
         (position) => { setUserLocation([position.coords.latitude, position.coords.longitude]); },
-        (error) => { console.error(error); alert("Моля, разрешете GPS."); }
+        (error) => { console.error(error); alert("Моля, разрешете GPS достъпа."); }
     );
   };
 
   const findNearestFountain = () => {
-    if (!navigator.geolocation) { alert("Браузърът ви не поддържа локализация."); return; }
+    if (!navigator.geolocation) { alert("GPS не се поддържа."); return; }
+    
     setFindingNearest(true);
+    
     navigator.geolocation.getCurrentPosition(
         (position) => {
-            const userLat = position.coords.latitude; const userLng = position.coords.longitude;
+            const userLat = position.coords.latitude; 
+            const userLng = position.coords.longitude;
             setUserLocation([userLat, userLng]);
-            let minDistance = Infinity; let nearestId = null;
+            
+            let minDistance = Infinity; 
+            let nearestId = null;
+            
             fountains.forEach(f => {
                 const dist = getDistanceFromLatLonInKm(userLat, userLng, f.coords[0], f.coords[1]);
                 if (dist < minDistance) { minDistance = dist; nearestId = f.id; }
             });
+            
             if (nearestId) {
                 const nearest = fountains.find(f => f.id === nearestId);
-                setActiveTab('map'); 
-                
-                // Проверка за валидни координати преди летене
-                if (nearest && nearest.coords) {
-                     setFlyToCoords(nearest.coords);
-                     setSelectedFountain(nearest);
+                if (nearest) {
+                    setActiveTab('map'); 
+                    setFlyToCoords(nearest.coords);
+                    setTimeout(() => setSelectedFountain(nearest), 500); 
                 }
             }
             setFindingNearest(false);
         },
-        (error) => { console.error(error); alert("Моля, разрешете GPS."); setFindingNearest(false); }
+        (error) => { 
+            console.error(error); 
+            alert("Не успяхме да ви намерим. Моля, проверете GPS настройките."); 
+            setFindingNearest(false); 
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
-
-  const startApp = () => { setShowWelcome(false); setTutorialStep(1); };
-  const finishTutorial = () => { setTutorialStep(0); localStorage.setItem(TUTORIAL_KEY, 'true'); };
-  const nextTutorialStep = () => { if (tutorialStep < 3) { setTutorialStep(prev => prev + 1); } else { finishTutorial(); } };
 
   const selectFountainFromList = (fountain) => {
       setActiveTab('map'); 
       setFlyToCoords(fountain.coords); 
-      // Open the modal
       setSelectedFountain(fountain);
-
-      navigator.geolocation.getCurrentPosition((pos) => { setUserLocation([pos.coords.latitude, pos.coords.longitude]); }, () => {}, {timeout: 5000});
   };
 
-  // ФИЛТРИРАНЕ + СОРТИРАНЕ
   const processFountains = (list) => {
-    // 1. Филтриране
     let filtered = list;
     if (selectedFilter) {
         filtered = list.filter(f => f.features && f.features.includes(selectedFilter));
     }
-    
-    // 2. Сортиране по дистанция (ако има GPS)
     if (userLocation) {
         return [...filtered].sort((a, b) => {
             const distA = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], a.coords[0], a.coords[1]);
@@ -625,20 +452,19 @@ export default function App() {
             return distA - distB;
         });
     }
-    
     return filtered;
   };
 
-  if (showWelcome) return <WelcomeScreen onStart={startApp} />;
+  if (showWelcome) return <WelcomeScreen onStart={() => { setShowWelcome(false); setTutorialStep(1); }} />;
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-gray-50 text-slate-800 font-sans relative">
-      {tutorialStep > 0 && <TutorialOverlay step={tutorialStep} onNext={nextTutorialStep} onFinish={finishTutorial} />}
+    <div className="flex flex-col h-[100dvh] bg-gray-50 text-slate-800 font-sans relative overflow-hidden">
+      {tutorialStep > 0 && <TutorialOverlay step={tutorialStep} onNext={() => setTutorialStep(p => p < 3 ? p + 1 : 0)} onFinish={() => { setTutorialStep(0); localStorage.setItem(TUTORIAL_KEY, 'true'); }} />}
       {showMenu && <SideMenu onClose={() => setShowMenu(false)} />}
       {showVictory && <VictoryModal onClose={() => setShowVictory(false)} />}
 
       <header className="bg-blue-600 text-white p-4 shadow-lg z-10 flex justify-between items-center relative shrink-0">
-        <div className="flex items-center gap-2 cursor-pointer active:opacity-80 transition-opacity" onClick={() => setShowMenu(true)}>
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowMenu(true)}>
             <div className="bg-white p-1.5 rounded-full"><CheshMapLogo className="text-blue-600 w-6 h-6" /></div>
             <div><h1 className="text-xl font-bold tracking-wide leading-none">CheshMap</h1><span className="text-[10px] text-blue-200 uppercase tracking-widest flex items-center gap-1">Меню <MenuIcon size={10}/></span></div>
         </div>
@@ -660,15 +486,14 @@ export default function App() {
                     icon={fountain.isFound ? GreenMarkerIcon : BlueMarkerIcon}
                     eventHandlers={{
                         click: () => {
-                            setSelectedFountain(fountain); // ОТВАРЯМЕ НОВИЯ ПРОЗОРЕЦ
                             setFlyToCoords(fountain.coords);
+                            setSelectedFountain(fountain);
                         },
                     }}
                 />
               ))}
             </MapContainer>
             
-            {/* ТУК Е РАЗКОВНИЧЕТО: МОДАЛЪТ Е ИЗВЪН КАРТАТА */}
             <FountainDetailModal 
                 fountain={selectedFountain} 
                 onClose={() => setSelectedFountain(null)} 
@@ -684,81 +509,44 @@ export default function App() {
                 </div>
             )}
 
-            <button onClick={findNearestFountain} disabled={findingNearest} className="absolute bottom-24 right-4 z-[999] bg-white text-blue-600 p-3 rounded-full shadow-xl border border-blue-100 active:scale-95 transition-all flex items-center gap-2 font-bold text-sm">
-                <Compass className={`w-6 h-6 ${findingNearest ? 'animate-spin' : ''}`} />{findingNearest ? 'Най-близка чешма' : 'Най-близка чешма'}
+            <button onClick={findNearestFountain} disabled={findingNearest} className="absolute bottom-24 right-4 z-[999] bg-white text-blue-600 p-4 rounded-full shadow-2xl border border-blue-100 active:scale-95 transition-all flex items-center gap-2 font-bold text-sm">
+                <Compass className={`w-6 h-6 ${findingNearest ? 'animate-spin' : ''}`} />{findingNearest ? 'Търся...' : 'Най-близка чешма'}
             </button>
           </div>
         )}
 
         {activeTab === 'list' && (
           <div className="p-4 overflow-y-auto h-full pb-32 max-w-md mx-auto w-full">
-            {/* БУТОН ЗА ВКЛЮЧВАНЕ НА ЛОКАЦИЯ */}
             {!userLocation && (
-                <button onClick={enableLocationForList} className="w-full bg-blue-100 text-blue-700 text-xs font-bold py-3 px-4 rounded-xl mb-4 flex items-center justify-center gap-2 border border-blue-200 animate-pulse">
+                <button onClick={enableLocationForList} className="w-full bg-blue-100 text-blue-700 text-xs font-bold py-4 px-4 rounded-xl mb-4 flex items-center justify-center gap-2 border border-blue-200 animate-pulse">
                     <MapPin size={16} /> Включи локация за разстояние
                 </button>
             )}
 
-            {/* ЛЕНТА С ФИЛТРИ */}
             <div className="mb-4">
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    <button 
-                        onClick={() => setSelectedFilter(null)}
-                        className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${!selectedFilter ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'}`}
-                    >
-                        Всички
-                    </button>
+                    <button onClick={() => setSelectedFilter(null)} className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${!selectedFilter ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'}`}>Всички</button>
                     {uniqueFeatures.map(feat => (
-                        <button 
-                            key={feat}
-                            onClick={() => setSelectedFilter(selectedFilter === feat ? null : feat)}
-                            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${selectedFilter === feat ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
-                        >
-                            {feat}
-                        </button>
+                        <button key={feat} onClick={() => setSelectedFilter(selectedFilter === feat ? null : feat)} className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-medium border transition-all ${selectedFilter === feat ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'}`}>{feat}</button>
                     ))}
                 </div>
             </div>
 
-            {foundCount > 0 && processFountains(fountains.filter(f => f.isFound)).length > 0 && (
-                <div className="mb-6">
-                    <h2 className="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 bg-green-50 p-2 rounded-lg border border-green-100"><CheckCircle size={16}/> Вече открити</h2>
-                    <div className="space-y-4">
-                        {processFountains(fountains.filter(f => f.isFound)).map(fountain => (
-                            <div key={fountain.id} className="bg-white rounded-xl shadow border border-green-200 overflow-hidden flex opacity-90">
-                                <div className="w-24 h-24 shrink-0"><img src={fountain.images[0]} className="w-full h-full object-cover"/></div>
-                                <div className="p-3 flex flex-col justify-center">
-                                    <h3 className="font-bold text-slate-800 text-sm">{fountain.name}</h3>
-                                    <p className="text-xs text-green-600 font-medium mt-1">✅ Добавена в колекцията</p>
-                                    <button onClick={() => selectFountainFromList(fountain)} className="mt-2 text-xs text-blue-600 font-bold underline text-left">Виж на картата</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-            <div>
-                <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2 bg-gray-100 p-2 rounded-lg border border-gray-200"><Compass size={16}/> Очакващи откриване</h2>
-                <div className="space-y-6">
-                    {processFountains(fountains.filter(f => !f.isFound)).length === 0 ? (
-                        <div className="text-center p-10 text-gray-400 text-sm italic">Няма намерени обекти с този филтър.</div>
-                    ) : (
-                        processFountains(fountains.filter(f => !f.isFound)).map(fountain => (
-                            <FountainListCard 
-                                key={fountain.id} 
-                                fountain={fountain} 
-                                dist={userLocation ? getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2) : null}
-                                onSelect={selectFountainFromList} 
-                            />
-                        ))
-                    )}
-                </div>
+            <div className="space-y-4">
+                {processFountains(fountains).map(fountain => (
+                    <FountainListCard 
+                        key={fountain.id} 
+                        fountain={fountain} 
+                        dist={userLocation ? getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2) : null}
+                        onSelect={selectFountainFromList} 
+                    />
+                ))}
             </div>
           </div>
         )}
 
         {activeTab === 'reward' && (
-            <div className="p-6 h-full flex flex-col items-center justify-center text-center bg-white pb-24">
+            <div className="p-6 h-full flex flex-col items-center justify-center text-center bg-white pb-32">
                 <div className="bg-yellow-50 p-8 rounded-full mb-6 border-4 border-yellow-100"><Gift className="w-16 h-16 text-yellow-500" /></div>
                 <h2 className="text-2xl font-extrabold text-slate-800 mb-3">Вашата Награда</h2>
                 {foundCount === fountains.length ? (
