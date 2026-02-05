@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, CircleMarker } from 'react-leaflet';
 import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy, Heart, Filter } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -184,6 +184,139 @@ const ImageSlider = ({ images }) => {
       )}
     </div>
   );
+};
+
+// --- MODAL ЗА ДЕТАЙЛИ НА КАРТАТА ---
+const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
+    if (!fountain) return null;
+
+    const dist = userLocation 
+        ? getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2)
+        : null;
+
+    return (
+        <div className="absolute inset-0 z-[2000] flex flex-col justify-end sm:justify-center items-center pointer-events-none">
+            {/* Тъмен фон */}
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose}></div>
+            
+            {/* Картата с детайли */}
+            <div className="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[85vh] animate-in slide-in-from-bottom duration-300">
+                
+                {/* Хедър на картата */}
+                <div className="relative h-64 shrink-0">
+                    <ImageSlider images={fountain.images} />
+                    <button onClick={onClose} className="absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-colors z-10">
+                        <X size={24} className="text-gray-700" />
+                    </button>
+                    {dist && (
+                        <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-full text-xs font-bold text-blue-700 shadow-sm flex items-center gap-1">
+                            📍 {dist} км
+                        </div>
+                    )}
+                </div>
+
+                {/* Съдържание */}
+                <div className="p-6 overflow-y-auto">
+                    <div className="flex justify-between items-start mb-2">
+                        <h2 className="text-2xl font-bold text-slate-900 leading-tight">{fountain.name}</h2>
+                    </div>
+
+                    {/* Екстри */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {fountain.features?.map((feat, i) => (
+                            <span key={i} className="text-xs font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-100">
+                                {feat}
+                            </span>
+                        ))}
+                    </div>
+
+                    {/* Описание (Пълно) */}
+                    <div className="prose prose-sm text-gray-600 mb-6 leading-relaxed">
+                        {fountain.description}
+                    </div>
+
+                    {/* Статус */}
+                    {fountain.isFound ? (
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-3 text-green-800 font-bold text-sm mb-4">
+                            <CheckCircle size={20} className="text-green-600" />
+                            Обектът е открит!
+                        </div>
+                    ) : (
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 text-gray-500 text-sm mb-4 italic">
+                            <Camera size={20} />
+                            Сканирай кода на място, за да отключиш.
+                        </div>
+                    )}
+
+                    {/* Бутон за навигация */}
+                    <a 
+                        href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all no-underline"
+                    >
+                        <Navigation size={20} />
+                        Навигирай до тук
+                    </a>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- CARD В СПИСЪКА (С РАЗПЪВАНЕ) ---
+const FountainListCard = ({ fountain, dist, onSelect }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    
+    // Проверка дали текстът е дълъг (над 80 символа)
+    const isLongText = fountain.description.length > 80;
+
+    return (
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col transition-all">
+            <div className="aspect-video w-full relative">
+                <ImageSlider images={fountain.images} />
+                {dist && (
+                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm">
+                        {dist} км
+                    </div>
+                )}
+            </div>
+            <div className="p-5">
+                <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-slate-800 text-xl leading-tight">{fountain.name}</h3>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 mb-3">
+                    {fountain.features?.slice(0, 3).map((feat, i) => (
+                        <span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">{feat}</span>
+                    ))}
+                    {fountain.features?.length > 3 && <span className="text-[10px] text-gray-400">+{fountain.features.length - 3}</span>}
+                </div>
+
+                {/* Текст с разпъване */}
+                <div className="text-sm text-gray-500 mb-4 leading-relaxed relative">
+                    <p className={!isExpanded ? "line-clamp-2" : ""}>
+                        {fountain.description}
+                    </p>
+                    {isLongText && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} 
+                            className="text-blue-600 font-bold text-xs mt-1 hover:underline flex items-center gap-1"
+                        >
+                            {isExpanded ? "Скрий" : "Виж още..."}
+                        </button>
+                    )}
+                </div>
+
+                <button 
+                    onClick={() => onSelect(fountain)} 
+                    className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-100 transition-colors"
+                >
+                    <MapPin size={18} /> Виж на картата
+                </button>
+            </div>
+        </div>
+    );
 };
 
 // --- МЕНЮ АКОРДЕОН ---
@@ -385,12 +518,15 @@ export default function App() {
   const [foundCount, setFoundCount] = useState(0);
   const [flyToCoords, setFlyToCoords] = useState(null);
   const [findingNearest, setFindingNearest] = useState(false);
-  const [targetFountainId, setTargetFountainId] = useState(null);
-  const [targetDistance, setTargetDistance] = useState(null);
+  
+  // States for target logic
   const [nearestResult, setNearestResult] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [scanResult, setScanResult] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
+
+  // NEW: State for selected fountain modal
+  const [selectedFountain, setSelectedFountain] = useState(null);
 
   // Извличане на всички уникални екстри за филтъра
   const uniqueFeatures = useMemo(() => {
@@ -426,16 +562,6 @@ export default function App() {
     if (scanId) { window.history.replaceState({}, document.title, "/"); }
   }, []);
 
-  useEffect(() => {
-    if (userLocation && targetFountainId) {
-        const target = fountains.find(f => f.id === targetFountainId);
-        if (target) {
-            const dist = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], target.coords[0], target.coords[1]);
-            setTargetDistance(dist.toFixed(2));
-        }
-    }
-  }, [userLocation, targetFountainId]);
-
   // Функция за пускане на локация
   const enableLocationForList = () => {
     if (!navigator.geolocation) { alert("Браузърът не поддържа GPS."); return; }
@@ -447,7 +573,7 @@ export default function App() {
 
   const findNearestFountain = () => {
     if (!navigator.geolocation) { alert("Браузърът ви не поддържа локализация."); return; }
-    setFindingNearest(true); setNearestResult(null); setTargetFountainId(null);
+    setFindingNearest(true); setNearestResult(null);
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const userLat = position.coords.latitude; const userLng = position.coords.longitude;
@@ -461,7 +587,8 @@ export default function App() {
                 const nearest = fountains.find(f => f.id === nearestId);
                 setActiveTab('map'); setFlyToCoords(nearest.coords);
                 setNearestResult({ id: nearest.id, name: nearest.name, dist: minDistance.toFixed(2) });
-                setTargetFountainId(nearestId);
+                // NEW: Open modal immediately
+                setSelectedFountain(nearest);
             }
             setFindingNearest(false);
         },
@@ -474,7 +601,12 @@ export default function App() {
   const nextTutorialStep = () => { if (tutorialStep < 3) { setTutorialStep(prev => prev + 1); } else { finishTutorial(); } };
 
   const selectFountainFromList = (fountain) => {
-      setActiveTab('map'); setFlyToCoords(fountain.coords); setTargetFountainId(fountain.id); setNearestResult(null);
+      setActiveTab('map'); 
+      setFlyToCoords(fountain.coords); 
+      setNearestResult(null);
+      // Open the modal
+      setSelectedFountain(fountain);
+
       navigator.geolocation.getCurrentPosition((pos) => { setUserLocation([pos.coords.latitude, pos.coords.longitude]); }, () => {}, {timeout: 5000});
   };
 
@@ -501,7 +633,7 @@ export default function App() {
   if (showWelcome) return <WelcomeScreen onStart={startApp} />;
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-gray-50 text-slate-800 font-sans">
+    <div className="flex flex-col h-[100dvh] bg-gray-50 text-slate-800 font-sans relative">
       {tutorialStep > 0 && <TutorialOverlay step={tutorialStep} onNext={nextTutorialStep} onFinish={finishTutorial} />}
       {showMenu && <SideMenu onClose={() => setShowMenu(false)} />}
       {showVictory && <VictoryModal onClose={() => setShowVictory(false)} />}
@@ -526,60 +658,29 @@ export default function App() {
                 <Marker 
                     key={fountain.id} 
                     position={fountain.coords}
-                    zIndexOffset={targetFountainId === fountain.id ? 1000 : 0}
-                    icon={targetFountainId === fountain.id ? RedMarkerIcon : (fountain.isFound ? GreenMarkerIcon : BlueMarkerIcon)}
-                >
-                  <Popup className="custom-popup p-0 overflow-hidden" maxWidth={250} minWidth={250}>
-                    <div className="flex flex-col p-0 m-0 w-full overflow-hidden rounded-t-lg">
-                      <div className="w-full h-40"><ImageSlider images={fountain.images} /></div>
-                      <div className="p-3 text-center">
-                        <h3 className="font-bold text-blue-900 text-lg mb-1">{fountain.name}</h3>
-                        
-                        {targetFountainId === fountain.id && targetDistance && (
-                            <div className="text-xs font-bold text-red-500 animate-pulse mb-2">📍 На {targetDistance} км от вас (по въздух)</div>
-                        )}
-
-                        <a 
-                            href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full bg-blue-600 !text-white hover:!text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-700 mb-3"
-                        >
-                            <MapPin size={14} className="!text-white"/> Навигирай с Google Maps
-                        </a>
-
-                        <div className="flex flex-wrap justify-center gap-1 mb-2">
-                            {fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">{feat}</span>))}
-                        </div>
-                        <p className="text-xs text-gray-600 mb-3 line-clamp-3">{fountain.description}</p>
-                        {fountain.isFound ? (
-                          <div className="bg-green-100 text-green-700 text-sm font-bold py-2 rounded-lg border border-green-200 flex items-center justify-center gap-2"><CheckCircle size={16}/> Успешно открита!</div>
-                        ) : (<div className="bg-gray-50 text-gray-500 text-xs py-2 px-3 rounded-lg border border-gray-200 italic">📷 Сканирайте стикера на място.</div>)}
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
+                    icon={fountain.isFound ? GreenMarkerIcon : BlueMarkerIcon}
+                    eventHandlers={{
+                        click: () => {
+                            setSelectedFountain(fountain);
+                            setFlyToCoords(fountain.coords);
+                        },
+                    }}
+                />
               ))}
             </MapContainer>
             
+            {/* NEW MODAL OVERLAY */}
+            <FountainDetailModal 
+                fountain={selectedFountain} 
+                onClose={() => setSelectedFountain(null)} 
+                userLocation={userLocation}
+            />
+
             {scanResult && (
                 <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur shadow-xl rounded-xl p-4 border-l-4 border-green-500 z-[1000] animate-in fade-in slide-in-from-top-4 duration-500 max-w-md mx-auto">
                     <div className="flex justify-between items-start">
                         <div><p className="text-xs text-green-600 font-bold uppercase tracking-wider flex items-center gap-1"><CheckCircle size={14} /> УСПЕХ!</p><h3 className="text-lg font-bold text-gray-800">Открихте: {scanResult.name}</h3></div>
                         <button onClick={() => setScanResult(null)} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} className="text-gray-400" /></button>
-                    </div>
-                </div>
-            )}
-
-            {(nearestResult || (targetFountainId && targetDistance)) && (
-                <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur shadow-xl rounded-xl p-4 border-l-4 border-red-500 z-[1000] animate-in fade-in slide-in-from-top-4 duration-500 max-w-md mx-auto">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">ЦЕЛТА Е:</p>
-                            <h3 className="text-lg font-bold text-red-600">{nearestResult ? nearestResult.name : fountains.find(f => f.id === targetFountainId)?.name}</h3>
-                            <p className="text-sm text-gray-600 mt-1">Разстояние: <strong>{nearestResult ? nearestResult.dist : targetDistance} км</strong></p>
-                        </div>
-                        <button onClick={() => {setNearestResult(null); setTargetFountainId(null);}} className="p-1 hover:bg-gray-100 rounded-full"><X size={20} className="text-gray-400" /></button>
                     </div>
                 </div>
             )}
@@ -599,7 +700,7 @@ export default function App() {
                 </button>
             )}
 
-            {/* НОВА ЛЕНТА С ФИЛТРИ */}
+            {/* ЛЕНТА С ФИЛТРИ */}
             <div className="mb-4">
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                     <button 
@@ -644,15 +745,12 @@ export default function App() {
                         <div className="text-center p-10 text-gray-400 text-sm italic">Няма намерени обекти с този филтър.</div>
                     ) : (
                         processFountains(fountains.filter(f => !f.isFound)).map(fountain => (
-                        <div key={fountain.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="aspect-video w-full relative"><ImageSlider images={fountain.images} /></div>
-                            <div className="p-5">
-                            <h3 className="font-bold text-slate-800 text-xl leading-tight mb-2">{fountain.name}</h3>
-                            <div className="flex flex-wrap gap-2 mb-3">{fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">{feat}</span>))}</div>
-                            <p className="text-sm text-gray-500 mb-5 leading-relaxed">{fountain.description}</p>
-                            <button onClick={() => selectFountainFromList(fountain)} className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-100 transition-colors"><Navigation size={18} /> Навигирай до там</button>
-                            </div>
-                        </div>
+                            <FountainListCard 
+                                key={fountain.id} 
+                                fountain={fountain} 
+                                dist={userLocation ? getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2) : null}
+                                onSelect={selectFountainFromList} 
+                            />
                         ))
                     )}
                 </div>
