@@ -18,7 +18,7 @@ const createSvgMarkerIcon = (color) => {
     const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1.5">
           <path fill-rule="evenodd" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5 0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          <circle cx="12" cy="9" r="2.5" fill="white"/>
+          <path d="M12 11.5c-1.38 0-2.5-1.12-2.5-2.5C9.5 7.62 12 5.5 12 5.5s2.5 2.12 2.5 3.5c0 1.38-1.12 2.5-2.5 2.5z" fill="white"/>
         </svg>`;
     return 'data:image/svg+xml;base64,' + btoa(svg);
 }
@@ -152,7 +152,7 @@ const FOUNTAINS_DATA = [
   }
 ];
 
-// --- HELPER ---
+// --- HELPER FUNCTION ---
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   var R = 6371; 
   var dLat = (lat2-lat1) * (Math.PI/180); 
@@ -163,14 +163,13 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 }
 
 // --- COMPONENTS ---
-const MapController = ({ targetCoords, userLocation }) => {
+const MapController = ({ targetCoords }) => {
     const map = useMap();
     useEffect(() => {
-        if (targetCoords) {
-            // Ако имаме и потребител, и цел, опитваме се да ги хванем и двете, иначе летим към целта
-            map.flyTo(targetCoords, 16, { animate: true, duration: 1.5 });
+        if (targetCoords && Array.isArray(targetCoords) && targetCoords.length === 2) {
+            map.flyTo(targetCoords, 16, { animate: true, duration: 2.0 });
         }
-    }, [targetCoords, map]);
+    }, [targetCoords]);
     return null;
 };
 
@@ -216,10 +215,14 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
     const googleMapsUrl = `http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`;
 
     return (
-        <div className="fixed inset-0 z-[5000] flex flex-col justify-end items-center h-[100dvh] pointer-events-none">
+        <div className="fixed inset-0 z-[12000] flex flex-col justify-end items-center h-[100dvh] pointer-events-none">
+            {/* Тъмен фон (Backdrop) */}
             <div className="absolute inset-0 bg-black/60 transition-opacity pointer-events-auto" onClick={onClose}></div>
             
+            {/* Modal Container */}
             <div className="relative bg-white w-full max-h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-t-2xl rounded-t-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300 pointer-events-auto">
+                
+                {/* Header Image */}
                 <div className="relative h-64 shrink-0 bg-gray-200">
                     <ImageSlider images={fountain.images} />
                     <button onClick={onClose} className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors z-20 text-gray-900">
@@ -232,8 +235,11 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                     )}
                 </div>
 
+                {/* Content */}
                 <div className="flex-1 overflow-y-auto bg-white p-6 pb-32">
                     <h2 className="text-2xl font-extrabold text-slate-900 leading-tight mb-3">{fountain.name}</h2>
+
+                    {/* Features */}
                     <div className="flex flex-wrap gap-2 mb-6">
                         {fountain.features?.map((feat, i) => (
                             <span key={i} className="text-xs font-bold bg-blue-50 text-blue-800 px-3 py-1.5 rounded-full border border-blue-100">
@@ -241,9 +247,13 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                             </span>
                         ))}
                     </div>
+
+                    {/* Description */}
                     <div className="text-slate-800 text-base leading-7 mb-8 whitespace-pre-line font-medium">
                         {fountain.description}
                     </div>
+
+                    {/* Status Box */}
                     <div className="mb-6">
                         {fountain.isFound ? (
                             <div className="bg-green-100 border border-green-200 rounded-xl p-4 flex items-center justify-center gap-2 text-green-900 font-bold">
@@ -259,6 +269,7 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                     </div>
                 </div>
 
+                {/* Fixed Navigation Button */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-8 z-30">
                     <a 
                         href={googleMapsUrl}
@@ -292,22 +303,34 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
             </div>
             <div className="p-5">
                 <h3 className="font-bold text-slate-900 text-lg mb-2">{fountain.name}</h3>
+                
                 <div className="flex flex-wrap gap-2 mb-3">
                     {fountain.features?.slice(0, 3).map((feat, i) => (
                         <span key={i} className="text-[10px] font-bold bg-gray-50 text-slate-700 px-2 py-1 rounded border border-gray-200">{feat}</span>
                     ))}
                 </div>
+
                 <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line mb-4">
                     {isExpanded ? fountain.description : (
-                        <span>{fountain.description.slice(0, 90)}{isLongText && "..."}</span>
+                        <span>
+                            {fountain.description.slice(0, 90)}
+                            {isLongText && "..."}
+                        </span>
                     )}
                     {isLongText && (
-                        <button onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} className="text-blue-600 font-bold ml-1">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} 
+                            className="text-blue-600 font-bold ml-1"
+                        >
                             {isExpanded ? "Скрий" : "Виж още"}
                         </button>
                     )}
                 </div>
-                <button onClick={() => onSelect(fountain)} className="w-full bg-white text-blue-600 border border-blue-200 font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors">
+
+                <button 
+                    onClick={() => onSelect(fountain)} 
+                    className="w-full bg-white text-blue-600 border border-blue-200 font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-50 transition-colors"
+                >
                     <MapPin size={18} /> Виж на картата
                 </button>
             </div>
@@ -315,7 +338,37 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
     );
 };
 
-// --- МЕНЮ ---
+// --- WELCOME ---
+const WelcomeScreen = ({ onStart }) => (
+    <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-cyan-900 via-blue-900 to-slate-900 text-white flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 overflow-y-auto">
+      <div className="max-w-sm mx-auto mt-10">
+          <div className="bg-white/10 p-5 rounded-full mb-6 backdrop-blur-md border border-white/20 shadow-xl inline-block">
+             <CheshMapLogo size={64} className="text-cyan-300 drop-shadow-lg" />
+          </div>
+          
+          <h1 className="text-5xl font-extrabold mb-1 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-white">CheshMap</h1>
+          <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Приложение на община Баните</p>
+          
+          <div className="bg-black/30 p-6 rounded-3xl backdrop-blur-md w-full mb-8 border border-white/10 shadow-2xl">
+            <h2 className="text-2xl font-bold mb-3 text-white">Пътят на водата<br/> <span className="text-xl font-normal text-cyan-200">Открий душата на Родопа планина</span></h2>
+            <p className="text-sm leading-relaxed mb-0 text-gray-200 font-light">
+                Обиколи едни от най-красивите чешми на община Баните, събери кодовете и стани част от легендата.
+            </p>
+          </div>
+
+          <button onClick={onStart} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-cyan-500/30 hover:scale-105 hover:shadow-cyan-500/50 active:scale-95 transition-all flex items-center gap-2 mb-10 mx-auto">
+            Започни приключението <ChevronRight />
+          </button>
+      </div>
+      <div className="w-full pb-4">
+        <p className="text-[11px] text-cyan-200/60 font-light flex flex-col items-center gap-1 text-center px-4">
+            Вдъхновено от труда на Маргарита и Алекси Димитрови
+        </p>
+      </div>
+    </div>
+);
+
+// --- SIDE MENU ---
 const MenuItem = ({ icon: Icon, title, children }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
@@ -332,26 +385,50 @@ const MenuItem = ({ icon: Icon, title, children }) => {
 };
 
 const SideMenu = ({ onClose }) => (
-    <div className="fixed inset-0 z-[6000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
+    <div className="fixed inset-0 z-[13000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
         <div className="bg-blue-600 text-white p-6 flex justify-between items-center shadow-md shrink-0">
             <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> CheshMap Меню</h2>
             <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-full"><X size={28}/></button>
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
             <MenuItem icon={Info} title="За Община Баните">
-                Ти се намираш в минералното сърце на Родопа планина...
+                Ти се намираш в минералното сърце на Родопа планина. Тук, водата и хората лекуват, затова специално за теб създадохме маршрут от история, култура и традиции. 
+                <br/><br/>
+                В приложението CheshMap ще откриеш някои от най-интересните и значими чешми в региона.
+                <br/><br/>
+                <strong className="text-blue-700">Община Баните ти пожелава незабравимо приключение по Пътя на водата!</strong>
             </MenuItem>
+            
             <MenuItem icon={Heart} title="Защо чешми?">
-                В Родопите водата е свещена, а чешмата е памет...
+                <strong className="text-blue-700">Повече от просто вода</strong>
+                <br/><br/>
+                В Родопите водата е свещена, а чешмата е памет. Тук хората не градят просто извори – те съграждат „хаир“ (добротворство). 
+                <br/><br/>
+                Всяка чешма и беседка по пътя ти е построена с мисъл за пътника – да спреш, да отпиеш ледена вода, да починеш под сянката и да благословиш майстора.
+                <br/><br/>
+                В община Баните водата лекува не само тялото, но и душата. Създадохме този маршрут, за да ти покажем скритите архитектурни бижута на нашия край – местата, където местните се събират, празнуват и споделят.
             </MenuItem>
+
             <MenuItem icon={Camera} title="Как работи играта?">
-                1. Открий. 2. Сканирай. 3. Спечели.
+                <strong className="text-blue-700">Предизвикателството в Стъпки:</strong>
+                <br/><br/>
+                📍 <strong>1. Открий:</strong> Използвай картата, за да намериш маркираните чешми и кътове за отдих.
+                <br/><br/>
+                📸 <strong>2. Сканирай:</strong> На всяка чешма има скрит QR код. Сканирай го с камерата на телефона си, за да "отключиш" обекта.
+                <br/><br/>
+                🏆 <strong>3. Спечели:</strong> Събери всички кодове и ела в Туристическия център на Община Баните, за да получиш своя сертификат "Пазител на водата" и специален подарък.
             </MenuItem>
+
             <MenuItem icon={Phone} title="Контакти">
-                Община Баните, ул. "Стефан Стамболов" 3<br/>тел: 03025/22-20<br/>email: obbanite@abv.bg
+                <strong>Община Баните</strong><br/>
+                с. Баните, ул. "Стефан Стамболов" 3<br/>
+                тел: 03025/22-20<br/>
+                email: obbanite@abv.bg
             </MenuItem>
         </div>
-        <div className="p-4 bg-gray-50 text-center text-xs text-gray-400 border-t border-gray-200 shrink-0">CheshMap v1.0 • 2026</div>
+        <div className="p-4 bg-gray-50 text-center text-xs text-gray-400 border-t border-gray-200 shrink-0">
+            CheshMap v1.0 • 2026
+        </div>
     </div>
 );
 
@@ -359,41 +436,33 @@ const SideMenu = ({ onClose }) => (
 const VictoryModal = ({ onClose }) => {
     useEffect(() => { try { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); } catch(e) {} }, []);
     return (
-        <div className="fixed inset-0 z-[7000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
+        <div className="fixed inset-0 z-[14000] bg-black/80 flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-500">
             <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative">
                 <div className="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-300 p-6 text-center relative">
+                    <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-50" style={{backgroundImage: 'radial-gradient(circle, white 2px, transparent 2.5px)', backgroundSize: '20px 20px'}}></div>
                     <Trophy size={64} className="text-white mx-auto drop-shadow-md relative z-10 mb-2" />
                     <h2 className="text-2xl font-black text-white uppercase tracking-widest drop-shadow-sm relative z-10">ПОБЕДА!</h2>
                 </div>
                 <div className="p-6 text-center space-y-4">
                     <h3 className="text-xl font-bold text-blue-900">Ти премина Пътя на водата! 🎉</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">Заповядай в Информационния център!</p>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                        Поздравления! Ти обиколи най-емблематичните кътчета на община Баните и се докосна до магията на Родопа планина.
+                    </p>
+                    
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left space-y-2 mt-2">
+                        <p className="font-bold text-blue-800 text-sm text-center mb-2">Твоят сертификат и подарък те очакват!</p>
+                        <div className="text-xs text-gray-700 space-y-1.5">
+                            <p>📍 <strong>Къде:</strong> Община Баните, Информационен център</p>
+                            <p>⏰ <strong>Работно време:</strong> Пон-Пет, 08:00 - 17:00 ч.</p>
+                            <p>📞 <strong>Телефон за връзка:</strong> 0883 33 71 81</p>
+                        </div>
+                    </div>
                 </div>
                 <button onClick={onClose} className="w-full py-4 bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors">ЗАТВОРИ</button>
             </div>
         </div>
     );
 };
-
-// --- WELCOME ---
-const WelcomeScreen = ({ onStart }) => (
-    <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-cyan-900 via-blue-900 to-slate-900 text-white flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
-      <div className="max-w-sm mx-auto">
-          <div className="bg-white/10 p-5 rounded-full mb-6 backdrop-blur-md border border-white/20 shadow-xl inline-block">
-             <CheshMapLogo size={64} className="text-cyan-300 drop-shadow-lg" />
-          </div>
-          <h1 className="text-5xl font-extrabold mb-1 tracking-tight">CheshMap</h1>
-          <p className="text-cyan-200/80 text-sm font-light tracking-widest uppercase mb-8">Община Баните</p>
-          <div className="bg-black/30 p-6 rounded-3xl backdrop-blur-md border border-white/10 shadow-2xl mb-8">
-            <h2 className="text-2xl font-bold mb-3">Пътят на водата</h2>
-            <p className="text-sm leading-relaxed text-gray-200 font-light">Открий магията на родопските чешми.</p>
-          </div>
-          <button onClick={onStart} className="bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg px-10 py-4 rounded-full shadow-lg transition-all flex items-center gap-2 mx-auto">
-            Започни <ChevronRight />
-          </button>
-      </div>
-    </div>
-);
 
 // --- MAIN APP ---
 export default function App() {
@@ -468,27 +537,27 @@ export default function App() {
             if (nearest) {
                 setActiveTab('map');
                 setFlyToCoords(nearest.coords);
-                // ВАЖНО: Само местим картата, НЕ отваряме модала, за да не дразним потребителя
+                // ВАЖНО: Само летим до там, НЕ отваряме модала автоматично
             }
             setFindingNearest(false);
         },
-        () => { alert("Грешка при локализация."); setFindingNearest(false); },
-        { enableHighAccuracy: true, timeout: 5000 }
+        () => { alert("Не мога да ви намеря. Проверете GPS."); setFindingNearest(false); },
+        { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
-  const filteredFountains = useMemo(() => {
-    let list = fountains;
-    if (selectedFilter) list = list.filter(f => f.features?.includes(selectedFilter));
+  const processFountains = (list) => {
+    let filtered = list;
+    if (selectedFilter) filtered = list.filter(f => f.features && f.features.includes(selectedFilter));
     if (userLocation) {
-        return [...list].sort((a,b) => {
+        return [...filtered].sort((a,b) => {
             const dA = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], a.coords[0], a.coords[1]);
             const dB = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], b.coords[0], b.coords[1]);
             return dA - dB;
         });
     }
-    return list;
-  }, [fountains, selectedFilter, userLocation]);
+    return filtered;
+  };
 
   if (showWelcome) return <WelcomeScreen onStart={() => { setShowWelcome(false); localStorage.setItem('cheshmap_tutorial_seen_v1', 'true'); }} />;
 
@@ -500,9 +569,9 @@ export default function App() {
       <header className="bg-blue-600 text-white p-4 shadow-md z-10 flex justify-between items-center shrink-0">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowMenu(true)}>
             <div className="bg-white p-1.5 rounded-full"><CheshMapLogo className="text-blue-600 w-6 h-6" /></div>
-            <h1 className="text-lg font-bold">CheshMap</h1>
+            <div><h1 className="text-xl font-bold tracking-wide leading-none">CheshMap</h1><span className="text-[10px] text-blue-200 uppercase tracking-widest flex items-center gap-1">Меню <MenuIcon size={10}/></span></div>
         </div>
-        <div className="text-sm font-bold bg-blue-700 px-3 py-1 rounded-full">{foundCount} / {fountains.length}</div>
+        <button onClick={() => setActiveTab('list')} className="text-sm font-bold bg-blue-700 hover:bg-blue-800 px-4 py-1.5 rounded-full shadow-inner flex items-center gap-2 transition-colors"><span>{foundCount} / {fountains.length}</span><span className="text-[10px] opacity-70 uppercase">Открити</span></button>
       </header>
 
       <main className="flex-1 relative overflow-hidden">
@@ -511,7 +580,7 @@ export default function App() {
             <MapContainer center={[41.6167, 25.0167]} zoom={14} style={{ height: "100%", width: "100%" }} zoomControl={false}>
               <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <MapController targetCoords={flyToCoords} />
-              {userLocation && <CircleMarker center={userLocation} pathOptions={{ color: 'white', fillColor: '#2563eb', fillOpacity: 1 }} radius={8} />}
+              {userLocation && <CircleMarker center={userLocation} pathOptions={{ color: 'white', fillColor: '#2563eb', fillOpacity: 1 }} radius={8}><Popup>📍 Вие сте тук</Popup></CircleMarker>}
               {fountains.map(f => (
                 <Marker 
                     key={f.id} 
@@ -531,28 +600,37 @@ export default function App() {
                 </div>
             )}
 
-            <button onClick={findNearestFountain} disabled={findingNearest} className="absolute bottom-24 right-4 z-[400] bg-white text-blue-600 p-3 rounded-full shadow-xl border border-blue-100 font-bold text-sm flex items-center gap-2">
-                <Compass className={findingNearest ? 'animate-spin' : ''} /> {findingNearest ? '...' : 'Най-близка чешма'}
+            <button onClick={findNearestFountain} disabled={findingNearest} className="absolute bottom-24 right-4 z-[400] bg-white text-blue-600 p-4 rounded-full shadow-2xl border border-blue-100 active:scale-95 transition-all flex items-center gap-2 font-bold text-sm">
+                <Compass className={`w-6 h-6 ${findingNearest ? 'animate-spin' : ''}`} />{findingNearest ? 'Търся...' : 'Най-близка чешма'}
             </button>
           </div>
         )}
 
         {activeTab === 'list' && (
-          <div className="p-4 overflow-y-auto h-full pb-32">
+          <div className="p-4 overflow-y-auto h-full pb-32 max-w-md mx-auto w-full">
             {!userLocation && (
-                <button onClick={enableLocationForList} className="w-full bg-blue-100 text-blue-700 font-bold py-3 rounded-xl mb-4 flex justify-center gap-2 border border-blue-200">
-                    <MapPin /> Включи локация
+                <button onClick={enableLocationForList} className="w-full bg-blue-100 text-blue-700 text-xs font-bold py-4 px-4 rounded-xl mb-4 flex items-center justify-center gap-2 border border-blue-200 animate-pulse">
+                    <MapPin size={16} /> Включи локация за разстояние
                 </button>
             )}
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
-                <button onClick={() => setSelectedFilter(null)} className={`px-4 py-1.5 rounded-full text-xs font-bold border ${!selectedFilter ? 'bg-blue-600 text-white' : 'bg-white'}`}>Всички</button>
-                {uniqueFeatures.map(f => (
-                    <button key={f} onClick={() => setSelectedFilter(selectedFilter === f ? null : f)} className={`px-4 py-1.5 rounded-full text-xs font-bold border ${selectedFilter === f ? 'bg-blue-600 text-white' : 'bg-white'}`}>{f}</button>
-                ))}
+
+            <div className="mb-4">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    <button onClick={() => setSelectedFilter(null)} className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${!selectedFilter ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'}`}>Всички</button>
+                    {uniqueFeatures.map(feat => (
+                        <button key={feat} onClick={() => setSelectedFilter(selectedFilter === feat ? null : feat)} className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-medium border transition-all ${selectedFilter === feat ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'}`}>{feat}</button>
+                    ))}
+                </div>
             </div>
+
             <div className="space-y-4">
-                {filteredFountains.map(f => (
-                    <FountainListCard key={f.id} fountain={f} dist={userLocation ? getDistanceFromLatLonInKm(userLocation[0], userLocation[1], f.coords[0], f.coords[1]).toFixed(2) : null} onSelect={(x) => { setActiveTab('map'); setFlyToCoords(x.coords); setSelectedFountain(x); }} />
+                {processFountains(fountains).map(fountain => (
+                    <FountainListCard 
+                        key={fountain.id} 
+                        fountain={fountain} 
+                        dist={userLocation ? getDistanceFromLatLonInKm(userLocation[0], userLocation[1], fountain.coords[0], fountain.coords[1]).toFixed(2) : null}
+                        onSelect={selectFountainFromList} 
+                    />
                 ))}
             </div>
           </div>
@@ -560,21 +638,30 @@ export default function App() {
 
         {activeTab === 'reward' && (
             <div className="p-6 h-full flex flex-col items-center justify-center text-center bg-white pb-32">
-                <div className="bg-yellow-50 p-8 rounded-full mb-6"><Gift className="w-16 h-16 text-yellow-500" /></div>
-                <h2 className="text-2xl font-bold mb-3">Вашата Награда</h2>
+                <div className="bg-yellow-50 p-8 rounded-full mb-6 border-4 border-yellow-100"><Gift className="w-16 h-16 text-yellow-500" /></div>
+                <h2 className="text-2xl font-extrabold text-slate-800 mb-3">Вашата Награда</h2>
                 {foundCount === fountains.length ? (
-                     <button onClick={() => setShowVictory(true)} className="bg-yellow-500 text-white font-bold py-4 px-8 rounded-full shadow-xl">ВЗЕМИ СЕРТИФИКАТ</button>
+                     <div className="space-y-4">
+                        <p className="text-green-600 font-bold text-lg animate-pulse">ВИЕ УСПЯХТЕ!</p>
+                        <button onClick={() => setShowVictory(true)} className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold py-4 px-8 rounded-full shadow-xl text-xl hover:scale-105 transition-transform flex items-center gap-2 mx-auto">
+                            <Trophy size={24}/> ВЗЕМИ СЕРТИФИКАТ
+                        </button>
+                     </div>
                 ) : (
-                    <><p className="text-gray-600 mb-8">Открийте всички 15 чешми!</p><p>Прогрес: {foundCount} / {fountains.length}</p></>
+                    <>
+                        <p className="text-gray-600 mb-8 max-w-xs mx-auto leading-relaxed">Открийте всички <strong>15 чешми</strong> в района, за да отключите Вашия подарък!</p>
+                        <div className="w-full max-w-xs bg-gray-100 rounded-full h-6 mb-3 overflow-hidden border border-gray-200"><div className="bg-gradient-to-r from-blue-500 to-blue-400 h-full transition-all duration-1000 ease-out" style={{ width: `${(foundCount / fountains.length) * 100}%` }}></div></div>
+                        <p className="text-sm font-medium text-gray-500">Прогрес: {foundCount} / {fountains.length}</p>
+                    </>
                 )}
             </div>
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 pb-safe shadow-lg z-[8000]">
-        <button onClick={() => setActiveTab('map')} className={`flex flex-col items-center p-2 ${activeTab === 'map' ? 'text-blue-600' : 'text-gray-400'}`}><Map /><span className="text-[10px]">Карта</span></button>
-        <button onClick={() => setActiveTab('list')} className={`flex flex-col items-center p-2 ${activeTab === 'list' ? 'text-blue-600' : 'text-gray-400'}`}><List /><span className="text-[10px]">Списък</span></button>
-        <button onClick={() => setActiveTab('reward')} className={`flex flex-col items-center p-2 ${activeTab === 'reward' ? 'text-blue-600' : 'text-gray-400'}`}><Gift /><span className="text-[10px]">Награда</span></button>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 pb-safe shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-[10000] max-w-md mx-auto w-full">
+        <button onClick={() => {setActiveTab('map'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'map' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Map size={24} strokeWidth={activeTab === 'map' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Карта</span></button>
+        <button onClick={() => {setActiveTab('list'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'list' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><List size={24} strokeWidth={activeTab === 'list' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Списък</span></button>
+        <button onClick={() => {setActiveTab('reward'); setShowMenu(false);}} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'reward' ? 'text-blue-600 scale-105' : 'text-gray-400'}`}><Gift size={24} strokeWidth={activeTab === 'reward' ? 2.5 : 2} /><span className="text-[10px] font-medium mt-1">Награда</span></button>
       </nav>
     </div>
   );
