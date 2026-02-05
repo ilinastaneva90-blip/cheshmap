@@ -186,7 +186,7 @@ const ImageSlider = ({ images }) => {
   );
 };
 
-// --- MODAL ЗА ДЕТАЙЛИ НА КАРТАТА ---
+// --- ИНФО КАРТА (MODAL) ---
 const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
     if (!fountain) return null;
 
@@ -195,18 +195,18 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
         : null;
 
     return (
-        <div className="absolute inset-0 z-[2000] flex flex-col justify-end pointer-events-none">
-            {/* Тъмен фон */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose}></div>
+        <div className="absolute inset-0 z-[2000] flex flex-col justify-end sm:justify-center items-center pointer-events-none">
+            {/* Тъмен фон при клик затваря */}
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose}></div>
             
-            {/* Картата с детайли */}
-            <div className="bg-white w-full h-[85vh] sm:h-auto sm:max-h-[85vh] sm:max-w-md sm:mx-auto sm:mb-10 sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-300">
+            {/* Самата карта */}
+            <div className="bg-white w-full h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-300">
                 
-                {/* Хедър на картата */}
-                <div className="relative h-64 shrink-0">
+                {/* Снимки */}
+                <div className="relative h-64 shrink-0 bg-gray-100">
                     <ImageSlider images={fountain.images} />
-                    <button onClick={onClose} className="absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition-colors z-10">
-                        <X size={24} className="text-gray-700" />
+                    <button onClick={onClose} className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-md hover:bg-white transition-colors z-10 text-gray-800">
+                        <X size={24} />
                     </button>
                     {dist && (
                         <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-full text-xs font-bold text-blue-700 shadow-sm flex items-center gap-1">
@@ -215,35 +215,33 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
                     )}
                 </div>
 
-                {/* Съдържание */}
+                {/* Текст и бутони (Скролващо се) */}
                 <div className="p-6 overflow-y-auto flex-1 bg-white">
-                    <div className="flex justify-between items-start mb-2">
-                        <h2 className="text-2xl font-bold text-slate-900 leading-tight">{fountain.name}</h2>
-                    </div>
+                    <h2 className="text-2xl font-bold text-slate-900 leading-tight mb-3">{fountain.name}</h2>
 
                     {/* Екстри */}
                     <div className="flex flex-wrap gap-2 mb-6">
                         {fountain.features?.map((feat, i) => (
-                            <span key={i} className="text-xs font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-100">
+                            <span key={i} className="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
                                 {feat}
                             </span>
                         ))}
                     </div>
 
-                    {/* Описание (Пълно, форматирано) */}
-                    <div className="text-gray-600 mb-8 text-sm leading-7 whitespace-pre-line">
+                    {/* Описание - ОПРАВЕНО */}
+                    <div className="text-gray-700 text-sm leading-7 mb-8 whitespace-pre-line">
                         {fountain.description}
                     </div>
 
-                    {/* Статус и бутони в долната част */}
-                    <div className="pb-4">
+                    {/* Статус */}
+                    <div className="space-y-3 pb-6">
                         {fountain.isFound ? (
-                            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-3 text-green-800 font-bold text-sm mb-4">
+                            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-center gap-2 text-green-800 font-bold text-sm">
                                 <CheckCircle size={20} className="text-green-600" />
                                 Обектът е открит!
                             </div>
                         ) : (
-                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3 text-gray-500 text-sm mb-4 italic">
+                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center justify-center gap-2 text-gray-500 text-sm italic">
                                 <Camera size={20} />
                                 Сканирай кода на място, за да отключиш.
                             </div>
@@ -265,16 +263,16 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
     );
 };
 
-// --- CARD В СПИСЪКА (С РАЗПЪВАНЕ) ---
+// --- КАРТА В СПИСЪКА ---
 const FountainListCard = ({ fountain, dist, onSelect }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     
-    // Проверка дали текстът е дълъг (над 80 символа)
-    const isLongText = fountain.description.length > 80;
+    // Проверка за дължина
+    const isLongText = fountain.description.length > 100;
 
     return (
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col transition-all">
-            <div className="aspect-video w-full relative">
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col transition-all">
+            <div className="aspect-video w-full relative bg-gray-100">
                 <ImageSlider images={fountain.images} />
                 {dist && (
                     <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm">
@@ -283,9 +281,7 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
                 )}
             </div>
             <div className="p-5">
-                <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-slate-800 text-xl leading-tight">{fountain.name}</h3>
-                </div>
+                <h3 className="font-bold text-slate-800 text-xl leading-tight mb-2">{fountain.name}</h3>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
                     {fountain.features?.slice(0, 3).map((feat, i) => (
@@ -294,23 +290,20 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
                     {fountain.features?.length > 3 && <span className="text-[10px] text-gray-400">+{fountain.features.length - 3}</span>}
                 </div>
 
-                {/* Текст с разпъване */}
-                <div className="relative mb-4">
-                    <div className={`text-sm text-gray-600 leading-relaxed whitespace-pre-line transition-all duration-300 ${!isExpanded ? 'max-h-16 overflow-hidden' : ''}`}>
-                        {fountain.description}
-                    </div>
-                    
-                    {/* Градиент за скриване, когато е свит */}
-                    {!isExpanded && isLongText && (
-                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+                {/* Текст с просто скриване/показване */}
+                <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line mb-4">
+                    {isExpanded ? fountain.description : (
+                        <span>
+                            {fountain.description.slice(0, 100)}
+                            {isLongText && "..."}
+                        </span>
                     )}
-
                     {isLongText && (
                         <button 
                             onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} 
-                            className="text-blue-600 font-bold text-xs mt-1 hover:underline flex items-center gap-1 bg-white pr-2 z-10 relative"
+                            className="text-blue-600 font-bold ml-1 hover:underline"
                         >
-                            {isExpanded ? "Скрий" : "Виж още..."}
+                            {isExpanded ? " Скрий" : " Виж още"}
                         </button>
                     )}
                 </div>
@@ -350,7 +343,7 @@ const MenuItem = ({ icon: Icon, title, children }) => {
 };
 
 const SideMenu = ({ onClose }) => (
-    <div className="fixed inset-0 z-[9999] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
+    <div className="fixed inset-0 z-[3000] bg-white text-slate-800 flex flex-col animate-in slide-in-from-left duration-300">
         <div className="bg-blue-600 text-white p-6 flex justify-between items-center shadow-md shrink-0">
             <h2 className="text-2xl font-bold flex items-center gap-2"><CheshMapLogo size={28}/> CheshMap Меню</h2>
             <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-full"><X size={28}/></button>
@@ -526,13 +519,11 @@ export default function App() {
   const [flyToCoords, setFlyToCoords] = useState(null);
   const [findingNearest, setFindingNearest] = useState(false);
   
-  // States for target logic
-  const [nearestResult, setNearestResult] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [scanResult, setScanResult] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
 
-  // NEW: State for selected fountain modal
+  // MODAL STATE
   const [selectedFountain, setSelectedFountain] = useState(null);
 
   // Извличане на всички уникални екстри за филтъра
@@ -580,7 +571,7 @@ export default function App() {
 
   const findNearestFountain = () => {
     if (!navigator.geolocation) { alert("Браузърът ви не поддържа локализация."); return; }
-    setFindingNearest(true); setNearestResult(null);
+    setFindingNearest(true);
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const userLat = position.coords.latitude; const userLng = position.coords.longitude;
@@ -592,10 +583,9 @@ export default function App() {
             });
             if (nearestId) {
                 const nearest = fountains.find(f => f.id === nearestId);
-                setActiveTab('map'); setFlyToCoords(nearest.coords);
-                setNearestResult({ id: nearest.id, name: nearest.name, dist: minDistance.toFixed(2) });
-                // NEW: Open modal immediately
-                setSelectedFountain(nearest);
+                setActiveTab('map'); 
+                setFlyToCoords(nearest.coords);
+                setSelectedFountain(nearest); // Отваряме модала веднага
             }
             setFindingNearest(false);
         },
@@ -610,7 +600,6 @@ export default function App() {
   const selectFountainFromList = (fountain) => {
       setActiveTab('map'); 
       setFlyToCoords(fountain.coords); 
-      setNearestResult(null);
       // Open the modal
       setSelectedFountain(fountain);
 
@@ -668,7 +657,7 @@ export default function App() {
                     icon={fountain.isFound ? GreenMarkerIcon : BlueMarkerIcon}
                     eventHandlers={{
                         click: () => {
-                            setSelectedFountain(fountain);
+                            setSelectedFountain(fountain); // ОТВАРЯМЕ НОВИЯ ПРОЗОРЕЦ
                             setFlyToCoords(fountain.coords);
                         },
                     }}
@@ -676,7 +665,7 @@ export default function App() {
               ))}
             </MapContainer>
             
-            {/* NEW MODAL OVERLAY */}
+            {/* ТУК Е РАЗКОВНИЧЕТО: МОДАЛЪТ Е ИЗВЪН КАРТАТА */}
             <FountainDetailModal 
                 fountain={selectedFountain} 
                 onClose={() => setSelectedFountain(null)} 
