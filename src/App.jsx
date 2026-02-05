@@ -186,8 +186,8 @@ const ImageSlider = ({ images }) => {
   );
 };
 
-// --- MODAL ЗА ДЕТАЙЛИ НА КАРТАТА ---
-// Този компонент седи извън картата, за да не забива
+// --- ИНФО КАРТА (MODAL - FIXED POSITION) ---
+// ВАЖНО: Използваме fixed, за да е най-отгоре и махаме blur ефектите от съдържанието
 const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
     if (!fountain) return null;
 
@@ -196,40 +196,40 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
         : null;
 
     return (
-        <div className="absolute inset-0 z-[2000] flex flex-col justify-end sm:justify-center items-center pointer-events-none">
-            {/* Тъмен фон при клик затваря */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose}></div>
+        <div className="fixed inset-0 z-[9999] flex flex-col justify-end sm:justify-center items-center">
+            {/* Тъмен фон (Backdrop) */}
+            <div className="absolute inset-0 bg-black/60 transition-opacity" onClick={onClose}></div>
             
-            {/* Самата карта */}
-            <div className="bg-white w-full h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col animate-in slide-in-from-bottom duration-300">
+            {/* Самата карта (Modal Content) - ПЛЪТНО БЯЛ ФОН */}
+            <div className="relative bg-white w-full max-h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
                 
                 {/* Снимки */}
-                <div className="relative h-64 shrink-0 bg-gray-100">
+                <div className="relative h-64 shrink-0 bg-gray-200">
                     <ImageSlider images={fountain.images} />
-                    <button onClick={onClose} className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-md hover:bg-white transition-colors z-10 text-gray-800">
+                    <button onClick={onClose} className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10 text-gray-800">
                         <X size={24} />
                     </button>
                     {dist && (
-                        <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-full text-xs font-bold text-blue-700 shadow-sm flex items-center gap-1">
+                        <div className="absolute bottom-4 left-4 bg-white px-3 py-1 rounded-full text-xs font-bold text-blue-700 shadow-sm flex items-center gap-1">
                             📍 {dist} км
                         </div>
                     )}
                 </div>
 
-                {/* Текст и бутони (Скролващо се) */}
-                <div className="p-6 overflow-y-auto flex-1 bg-white">
+                {/* Текст и бутони (Скролващо се) - ПЛЪТНО БЯЛ ФОН */}
+                <div className="flex-1 overflow-y-auto bg-white p-6">
                     <h2 className="text-2xl font-bold text-slate-900 leading-tight mb-3">{fountain.name}</h2>
 
                     {/* Екстри */}
                     <div className="flex flex-wrap gap-2 mb-6">
                         {fountain.features?.map((feat, i) => (
-                            <span key={i} className="text-xs font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
+                            <span key={i} className="text-xs font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
                                 {feat}
                             </span>
                         ))}
                     </div>
 
-                    {/* Описание - ТЪМЕН ТЕКСТ И ЯСНО ЧЕТЕНЕ */}
+                    {/* Описание - ТЪМЕН ТЕКСТ (ЧЕРЕН) */}
                     <div className="text-slate-900 text-base leading-7 mb-8 whitespace-pre-line font-medium">
                         {fountain.description}
                     </div>
@@ -267,8 +267,6 @@ const FountainDetailModal = ({ fountain, onClose, userLocation }) => {
 // --- КАРТА В СПИСЪКА ---
 const FountainListCard = ({ fountain, dist, onSelect }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    
-    // Проверка за дължина
     const isLongText = fountain.description.length > 100;
 
     return (
@@ -281,7 +279,7 @@ const FountainListCard = ({ fountain, dist, onSelect }) => {
                     </div>
                 )}
             </div>
-            <div className="p-5">
+            <div className="p-5 bg-white">
                 <h3 className="font-bold text-slate-900 text-xl leading-tight mb-2">{fountain.name}</h3>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
