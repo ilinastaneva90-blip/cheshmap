@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from 'react-leaflet';
-import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy, Heart } from 'lucide-react';
+import { Map, List, Gift, Navigation, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Compass, X, CheckCircle, BookOpen, ArrowDown, Camera, Menu as MenuIcon, Info, FileText, Phone, MapPin, Trophy, Heart, Filter } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import confetti from 'canvas-confetti';
@@ -107,7 +107,7 @@ const FOUNTAINS_DATA = [
     id: 10, 
     name: "Малчевата чешма", 
     coords: [41.62068278273291, 25.007691773734983], 
-    description: "Изключително красива и поддържана беседка.", 
+    description: "Наричат я още „Любовната чешма“. Тук камъкът оживява в уникален стенопис, изобразяващ римски мост и родопски къщи. Дар от Мина и Илчо Малчеви за техните деца, но отворен с щедрост за всеки пътник.", 
     features: ["Изворна вода", "Беседка", "Барбекю", "Паркинг", "Стенопис"], 
     images: ["/images/17.jpg"] 
   },
@@ -390,6 +390,14 @@ export default function App() {
   const [nearestResult, setNearestResult] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [scanResult, setScanResult] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState(null);
+
+  // Извличане на всички уникални екстри за филтъра
+  const uniqueFeatures = useMemo(() => {
+    const allFeatures = new Set();
+    FOUNTAINS_DATA.forEach(f => f.features?.forEach(feat => allFeatures.add(feat)));
+    return Array.from(allFeatures).sort();
+  }, []);
 
   useEffect(() => {
     // Вземаме само прогреса, без GPS
@@ -470,13 +478,24 @@ export default function App() {
       navigator.geolocation.getCurrentPosition((pos) => { setUserLocation([pos.coords.latitude, pos.coords.longitude]); }, () => {}, {timeout: 5000});
   };
 
-  const sortFountainsByDistance = (list) => {
-    if (!userLocation) return list;
-    return [...list].sort((a, b) => {
-        const distA = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], a.coords[0], a.coords[1]);
-        const distB = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], b.coords[0], b.coords[1]);
-        return distA - distB;
-    });
+  // ФИЛТРИРАНЕ + СОРТИРАНЕ
+  const processFountains = (list) => {
+    // 1. Филтриране
+    let filtered = list;
+    if (selectedFilter) {
+        filtered = list.filter(f => f.features && f.features.includes(selectedFilter));
+    }
+    
+    // 2. Сортиране по дистанция (ако има GPS)
+    if (userLocation) {
+        return [...filtered].sort((a, b) => {
+            const distA = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], a.coords[0], a.coords[1]);
+            const distB = getDistanceFromLatLonInKm(userLocation[0], userLocation[1], b.coords[0], b.coords[1]);
+            return distA - distB;
+        });
+    }
+    
+    return filtered;
   };
 
   if (showWelcome) return <WelcomeScreen onStart={startApp} />;
@@ -521,7 +540,7 @@ export default function App() {
                         )}
 
                         <a 
-                            href={`https://www.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
+                            href={`http://googleusercontent.com/maps.google.com/maps?q=${fountain.coords[0]},${fountain.coords[1]}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full bg-blue-600 !text-white hover:!text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-md no-underline hover:bg-blue-700 mb-3"
@@ -573,18 +592,39 @@ export default function App() {
 
         {activeTab === 'list' && (
           <div className="p-4 overflow-y-auto h-full pb-24 max-w-md mx-auto w-full">
-            {/* БУТОН ЗА ВКЛЮЧВАНЕ НА ЛОКАЦИЯ В СПИСЪКА */}
+            {/* БУТОН ЗА ВКЛЮЧВАНЕ НА ЛОКАЦИЯ */}
             {!userLocation && (
                 <button onClick={enableLocationForList} className="w-full bg-blue-100 text-blue-700 text-xs font-bold py-3 px-4 rounded-xl mb-4 flex items-center justify-center gap-2 border border-blue-200 animate-pulse">
                     <MapPin size={16} /> Включи локация за разстояние
                 </button>
             )}
 
-            {foundCount > 0 && (
+            {/* НОВА ЛЕНТА С ФИЛТРИ */}
+            <div className="mb-4">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    <button 
+                        onClick={() => setSelectedFilter(null)}
+                        className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${!selectedFilter ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'}`}
+                    >
+                        Всички
+                    </button>
+                    {uniqueFeatures.map(feat => (
+                        <button 
+                            key={feat}
+                            onClick={() => setSelectedFilter(selectedFilter === feat ? null : feat)}
+                            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${selectedFilter === feat ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                        >
+                            {feat}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {foundCount > 0 && processFountains(fountains.filter(f => f.isFound)).length > 0 && (
                 <div className="mb-6">
-                    <h2 className="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 bg-green-50 p-2 rounded-lg border border-green-100"><CheckCircle size={16}/> Вече открити ({foundCount})</h2>
+                    <h2 className="text-sm font-bold text-green-600 uppercase tracking-wider mb-3 flex items-center gap-2 bg-green-50 p-2 rounded-lg border border-green-100"><CheckCircle size={16}/> Вече открити</h2>
                     <div className="space-y-4">
-                        {sortFountainsByDistance(fountains.filter(f => f.isFound)).map(fountain => (
+                        {processFountains(fountains.filter(f => f.isFound)).map(fountain => (
                             <div key={fountain.id} className="bg-white rounded-xl shadow border border-green-200 overflow-hidden flex opacity-90">
                                 <div className="w-24 h-24 shrink-0"><img src={fountain.images[0]} className="w-full h-full object-cover"/></div>
                                 <div className="p-3 flex flex-col justify-center">
@@ -598,19 +638,23 @@ export default function App() {
                 </div>
             )}
             <div>
-                <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2 bg-gray-100 p-2 rounded-lg border border-gray-200"><Compass size={16}/> Очакващи откриване ({fountains.length - foundCount})</h2>
+                <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2 bg-gray-100 p-2 rounded-lg border border-gray-200"><Compass size={16}/> Очакващи откриване</h2>
                 <div className="space-y-6">
-                    {sortFountainsByDistance(fountains.filter(f => !f.isFound)).map(fountain => (
-                    <div key={fountain.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="aspect-video w-full relative"><ImageSlider images={fountain.images} /></div>
-                        <div className="p-5">
-                        <h3 className="font-bold text-slate-800 text-xl leading-tight mb-2">{fountain.name}</h3>
-                        <div className="flex flex-wrap gap-2 mb-3">{fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">{feat}</span>))}</div>
-                        <p className="text-sm text-gray-500 mb-5 leading-relaxed">{fountain.description}</p>
-                        <button onClick={() => selectFountainFromList(fountain)} className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-100 transition-colors"><Navigation size={18} /> Навигирай до там</button>
+                    {processFountains(fountains.filter(f => !f.isFound)).length === 0 ? (
+                        <div className="text-center p-10 text-gray-400 text-sm italic">Няма намерени обекти с този филтър.</div>
+                    ) : (
+                        processFountains(fountains.filter(f => !f.isFound)).map(fountain => (
+                        <div key={fountain.id} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                            <div className="aspect-video w-full relative"><ImageSlider images={fountain.images} /></div>
+                            <div className="p-5">
+                            <h3 className="font-bold text-slate-800 text-xl leading-tight mb-2">{fountain.name}</h3>
+                            <div className="flex flex-wrap gap-2 mb-3">{fountain.features?.map((feat, i) => (<span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">{feat}</span>))}</div>
+                            <p className="text-sm text-gray-500 mb-5 leading-relaxed">{fountain.description}</p>
+                            <button onClick={() => selectFountainFromList(fountain)} className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-3 rounded-lg flex items-center justify-center gap-2 border border-blue-100 transition-colors"><Navigation size={18} /> Навигирай до там</button>
+                            </div>
                         </div>
-                    </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
           </div>
